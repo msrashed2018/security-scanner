@@ -1,0 +1,83 @@
+# Container Security Scan Template
+# Focused on Docker images and container security
+
+scan_request:
+  description: "Container security scan focusing on Docker images"
+
+# Scan Targets - container focused
+targets:
+  docker_images:
+    - "nginx:latest"
+    - "ubuntu:20.04"
+  git_repositories: []
+  kubernetes_manifests: []
+  terraform_code: []
+  filesystem_paths: []
+
+# Scanner Configuration - container security focused
+scanners:
+  trivy:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--dependency-tree"
+      - "--list-all-pkgs"
+      - "--ignore-unfixed"
+  
+  grype:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  syft:
+    enabled: true
+    timeout: 300
+    severity_threshold: "INFO"
+    additional_args: []
+  
+  dockle:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  hadolint:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  # Disable non-container scanners
+  semgrep:
+    enabled: false
+  trufflehog:
+    enabled: false
+  gitleaks:
+    enabled: false
+  checkov:
+    enabled: false
+  conftest:
+    enabled: false
+
+# Output Configuration
+output:
+  base_dir: "container-security-reports"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  generate_executive_summary: true
+
+# Execution Settings
+execution:
+  parallel_scans: true
+  max_workers: 4
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "container-scan.log"
