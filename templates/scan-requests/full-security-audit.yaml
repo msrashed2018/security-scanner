@@ -1,0 +1,106 @@
+# Comprehensive Security Audit Template
+# Enables all scanners for thorough security analysis
+
+scan_request:
+  description: "Comprehensive security audit with all scanners"
+
+# Scan Targets - add your specific targets
+targets:
+  docker_images: []
+  git_repositories: ["."]  # Current directory by default
+  kubernetes_manifests: []
+  terraform_code: []
+  filesystem_paths: []
+
+# Scanner Configuration - all scanners enabled
+scanners:
+  trivy:
+    enabled: true
+    timeout: 900
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--dependency-tree"
+      - "--list-all-pkgs"
+      - "--ignore-unfixed"
+  
+  grype:
+    enabled: true
+    timeout: 600
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  syft:
+    enabled: true
+    timeout: 300
+    severity_threshold: "INFO"
+    additional_args: []
+  
+  semgrep:
+    enabled: true
+    timeout: 1200
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--config=p/security-audit"
+      - "--config=p/owasp-top-10"
+      - "--config=p/cwe-top-25"
+  
+  trufflehog:
+    enabled: true
+    timeout: 900
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--no-verification"
+      - "--filter-entropy=3.0"
+  
+  gitleaks:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    additional_args: []
+  
+  checkov:
+    enabled: true
+    timeout: 900
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--quiet"
+  
+  conftest:
+    enabled: false  # Requires policy files
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  dockle:
+    enabled: true
+    timeout: 600
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  hadolint:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+
+# Output Configuration
+output:
+  base_dir: "comprehensive-security-audit"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  consolidate_reports: true
+  generate_executive_summary: true
+
+# Execution Settings
+execution:
+  parallel_scans: true
+  max_workers: 6
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "security-audit.log"

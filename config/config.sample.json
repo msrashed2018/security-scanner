@@ -1,0 +1,87 @@
+{
+  "_metadata": {
+    "version": "1.0.0",
+    "description": "Sample configuration for Security Scanner - Customize for your needs",
+    "last_updated": "2025-08-30"
+  },
+  "scan_targets": {
+    "docker_images": [],
+    "git_repositories": [],
+    "kubernetes_manifests": [],
+    "terraform_code": [],
+    "filesystem_paths": ["/workspace/checkoutrails/security/test_code"]
+  },
+  "scanners": {
+    "trivy": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "HIGH",
+      "additional_args": [
+        "--timeout", "15m",
+        "--dependency-tree",
+        "--list-all-pkgs",
+        "--ignore-unfixed"
+      ],
+      "description": "Comprehensive security scanner for containers, filesystems, and Git repositories"
+    },
+    "grype": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "MEDIUM",
+      "additional_args": [],
+      "description": "Fast vulnerability scanner for container images and filesystems"
+    },
+    "syft": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "INFO",
+      "additional_args": [],
+      "description": "SBOM (Software Bill of Materials) generator"
+    },
+    "dockle": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "MEDIUM",
+      "additional_args": [],
+      "description": "Container image linter for security best practices"
+    },
+    "trufflehog": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "HIGH",
+      "additional_args": [
+        "--no-verification",
+        "--filter-entropy=3.0",
+        "--concurrency=4"
+      ],
+      "description": "Secrets scanner for Git repositories and Docker images"
+    },
+    "semgrep": {
+      "enabled": true,
+      "timeout": 900,
+      "severity_threshold": "MEDIUM",
+      "additional_args": [
+        "--config", "p/security-audit",
+        "--config", "p/cwe-top-25",
+        "--severity=WARNING"
+      ],
+      "description": "Static analysis security scanner for finding bugs and vulnerabilities"
+    }
+  },
+  "output": {
+    "base_dir": "reports",
+    "formats": ["json", "html"],
+    "include_raw": true,
+    "consolidate_reports": true,
+    "generate_executive_summary": true
+  },
+  "execution": {
+    "parallel_scans": true,
+    "max_workers": 4,
+    "fail_on_high_severity": false
+  },
+  "logging": {
+    "level": "INFO",
+    "file": null
+  }
+}

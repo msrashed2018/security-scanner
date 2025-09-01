@@ -1,0 +1,72 @@
+# Security Scan Request Configuration
+# This YAML file defines a complete scan request for the security scanner
+
+# Scan Metadata
+scan_request:
+  id: "custom-scan-001"  # Optional custom scan ID
+  description: "Comprehensive security scan of web application"
+
+# Scan Targets - specify what to scan
+targets:
+  docker_images:
+    - "nginx:latest"
+    - "myapp:v1.2.3"
+  git_repositories:
+    - "/path/to/source/code"
+  kubernetes_manifests:
+    - "/path/to/k8s/deployment.yaml"
+  terraform_code:
+    - "/path/to/terraform/"
+  filesystem_paths:
+    - "/path/to/additional/files"
+
+# Scanner Configuration - which scanners to run and their settings
+scanners:
+  trivy:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--dependency-tree"
+      - "--list-all-pkgs"
+  grype:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+  semgrep:
+    enabled: true
+    timeout: 900
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--config=p/security-audit"
+      - "--config=p/owasp-top-10"
+  # Disable other scanners by setting enabled: false
+  dockle:
+    enabled: false
+  hadolint:
+    enabled: false
+
+# Output Configuration
+output:
+  base_dir: "security-reports"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  consolidate_reports: true
+  generate_executive_summary: true
+
+# Execution Settings
+execution:
+  parallel_scans: true
+  max_workers: 4
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "scan.log"
+
+# Optional: Use presets (alternative to detailed scanner config)
+# preset: "web-app-scan"

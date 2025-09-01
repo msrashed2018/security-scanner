@@ -1,0 +1,110 @@
+# Example configuration file for Security Scanner Service
+# Copy this file to config.yaml and customize as needed
+
+# Input targets
+docker_images:
+  - "nginx:latest"
+  - "ubuntu:20.04"
+
+git_repositories:
+  - "/path/to/your/repo"
+
+kubernetes_manifests:
+  - "./k8s/deployment.yaml"
+  - "./k8s/"
+
+terraform_code:
+  - "./terraform/"
+
+# Scanner configurations
+trivy:
+  enabled: true
+  timeout: 600
+  severity_threshold: "HIGH"
+  additional_args:
+    - "--dependency-tree"
+    - "--list-all-pkgs"
+    - "--ignore-unfixed"
+
+grype:
+  enabled: true
+  timeout: 300
+  severity_threshold: "MEDIUM"
+  additional_args: []
+
+syft:
+  enabled: true
+  timeout: 300
+  severity_threshold: "INFO"
+  additional_args: []
+
+dockle:
+  enabled: true
+  timeout: 300
+  severity_threshold: "MEDIUM"
+  additional_args: []
+
+hadolint:
+  enabled: true
+  timeout: 300
+  severity_threshold: "MEDIUM"
+  additional_args: []
+
+checkov:
+  enabled: true
+  timeout: 600
+  severity_threshold: "MEDIUM"
+  additional_args:
+    - "--quiet"
+
+kics:
+  enabled: true
+  timeout: 600
+  severity_threshold: "MEDIUM"
+  additional_args:
+    - "--silent"
+
+conftest:
+  enabled: false  # Requires policy files
+  timeout: 300
+  severity_threshold: "MEDIUM"
+  additional_args: []
+
+trufflehog:
+  enabled: true
+  timeout: 600
+  severity_threshold: "HIGH"
+  additional_args:
+    - "--no-update"
+
+gitleaks:
+  enabled: true
+  timeout: 300
+  severity_threshold: "HIGH"
+  additional_args:
+    - "--no-git"
+
+semgrep:
+  enabled: true
+  timeout: 600
+  severity_threshold: "MEDIUM"
+  additional_args:
+    - "--config=p/security-audit"
+    - "--config=p/owasp-top-10"
+
+# Output configuration
+output:
+  base_dir: "security-reports"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  consolidate_reports: true
+  generate_executive_summary: true
+
+# Execution settings
+parallel_scans: true
+max_workers: 4
+log_level: "INFO"
+fail_on_high_severity: false
