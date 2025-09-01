@@ -54,7 +54,7 @@ class SecurityScannerService:
             ScanSummary with all results
         """
         if scan_id is None:
-            scan_id = f"scan-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{str(uuid.uuid4())[:8]}"
+            scan_id = f"scan-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         
         start_time = datetime.now()
         self.logger.info(f"Starting security scan: {scan_id}")

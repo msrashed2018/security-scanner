@@ -5,6 +5,9 @@ HTML output formatter for security scan reports.
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
+import json
+import subprocess
+import sys
 
 from .formatters import BaseFormatter
 from ..core.models import ScanSummary, ScanResult, Finding, SeverityLevel
@@ -23,24 +26,33 @@ class HtmlFormatter(BaseFormatter):
         return "html"
     
     def generate_report(self, summary: ScanSummary, output_config: OutputConfig) -> str:
-        """Generate HTML report."""
+        """Generate HTML report with hierarchical structure."""
         
-        # Create output directory
-        output_dir = self._create_output_directory(output_config, summary.scan_id)
+        # Create hierarchical output directory structure
+        scan_dir = self._create_hierarchical_structure(output_config, summary)
         
-        # Generate executive summary
+        # Generate summary-level reports
+        summary_dir = scan_dir / "summary"
+        summary_dir.mkdir(exist_ok=True)
+        
         if output_config.generate_executive_summary:
-            summary_file = output_dir / "executive_summary.html"
+            summary_file = summary_dir / "executive_summary.html"
             summary_content = self._generate_executive_summary(summary)
             self._write_file(summary_file, summary_content)
         
         # Generate detailed report
-        detailed_file = self._get_output_file_path(output_dir, summary.scan_id, "_detailed")
+        detailed_file = summary_dir / "detailed_report.html"
         detailed_content = self._generate_detailed_report(summary)
         self._write_file(detailed_file, detailed_content)
         
-        # Generate individual scanner reports
-        self._generate_scanner_reports(summary, output_dir)
+        # Generate target-specific reports
+        self._generate_target_reports(summary, scan_dir)
+        
+        # Generate scan metadata
+        self._generate_scan_metadata(summary, scan_dir)
+        
+        # Generate index files using the index generator
+        self._generate_index_files(output_config.base_dir)
         
         return str(summary_file if output_config.generate_executive_summary else detailed_file)
     
@@ -180,61 +192,6 @@ class HtmlFormatter(BaseFormatter):
         
         return html
     
-    def _generate_scanner_reports(self, summary: ScanSummary, output_dir: Path) -> None:
-        """Generate individual scanner reports."""
-        
-        scanner_results = {}
-        for result in summary.results:
-            scanner_name = result.scanner_name
-            if scanner_name not in scanner_results:
-                scanner_results[scanner_name] = []
-            scanner_results[scanner_name].append(result)
-        
-        for scanner_name, results in scanner_results.items():
-            scanner_file = output_dir / f"{scanner_name}_report.html"
-            scanner_content = self._generate_scanner_report(scanner_name, results, summary)
-            self._write_file(scanner_file, scanner_content)
-    
-    def _generate_scanner_report(self, scanner_name: str, results: List[ScanResult], summary: ScanSummary) -> str:
-        """Generate individual scanner report."""
-        
-        all_findings = []
-        for result in results:
-            all_findings.extend(result.findings)
-        
-        html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{scanner_name.title()} Scanner Report - {summary.scan_id}</title>
-    <style>
-        {self._get_css_styles()}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>🔧 {scanner_name.title()} Scanner Report</h1>
-            <div class="scan-info">
-                <p><strong>Scan ID:</strong> {summary.scan_id}</p>
-                <p><strong>Findings:</strong> {len(all_findings)}</p>
-            </div>
-        </header>
-
-        <div class="section">
-            <h2>📋 Findings</h2>
-            {self._generate_findings_list(all_findings)}
-        </div>
-
-        <footer class="footer">
-            <p><a href="executive_summary.html">Back to Executive Summary</a></p>
-        </footer>
-    </div>
-</body>
-</html>"""
-        
-        return html
     
     def _get_css_styles(self) -> str:
         """Get CSS styles for HTML reports."""
@@ -430,3 +387,163 @@ class HtmlFormatter(BaseFormatter):
         html += "</ul>"
         
         return html
+    
+    def _create_hierarchical_structure(self, output_config: OutputConfig, summary: ScanSummary) -> Path:
+        """Create hierarchical directory structure for reports."""
+        from datetime import datetime
+        import json
+        
+        # Create main scan directory
+        scan_dir = Path(output_config.base_dir) / summary.scan_id
+        scan_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create organized subdirectories
+        (scan_dir / "summary").mkdir(exist_ok=True)          # Executive and detailed reports
+        (scan_dir / "targets").mkdir(exist_ok=True)          # Target-specific reports
+        (scan_dir / "raw-data").mkdir(exist_ok=True)         # JSON outputs and SARIF files
+        (scan_dir / "metadata").mkdir(exist_ok=True)         # Scan metadata
+        
+        return scan_dir
+    
+    def _generate_target_reports(self, summary: ScanSummary, scan_dir: Path) -> None:
+        """Generate target-specific reports and combined findings."""
+        targets_dir = scan_dir / "targets"
+        
+        # Group results by target
+        target_results = {}
+        for result in summary.results:
+            target_name = self._get_safe_target_name(result.target.path)
+            if target_name not in target_results:
+                target_results[target_name] = []
+            target_results[target_name].append(result)
+        
+        # Generate reports for each target
+        for target_name, results in target_results.items():
+            target_dir = targets_dir / target_name
+            target_dir.mkdir(exist_ok=True)
+            
+            # Generate combined findings JSON
+            combined_findings = []
+            for result in results:
+                for finding in result.findings:
+                    combined_findings.append({
+                        'scanner': result.scanner_name,
+                        'severity': finding.severity.value,
+                        'title': finding.title,
+                        'description': finding.description,
+                        'location': finding.location,
+                        'remediation': finding.remediation
+                    })
+            
+            # Write combined findings
+            findings_file = target_dir / "combined_findings.json"
+            with open(findings_file, 'w', encoding='utf-8') as f:
+                json.dump(combined_findings, f, indent=2)
+            
+            # Generate scanner-specific reports
+            scanners_dir = target_dir / "scanners"
+            scanners_dir.mkdir(exist_ok=True)
+            
+            for result in results:
+                scanner_file = scanners_dir / f"{result.scanner_name}.json"
+                with open(scanner_file, 'w', encoding='utf-8') as f:
+                    json.dump(result.to_dict(), f, indent=2)
+    
+    def _generate_scan_metadata(self, summary: ScanSummary, scan_dir: Path) -> None:
+        """Generate scan metadata file."""
+        from datetime import datetime
+        import json
+        
+        # Calculate scanners used
+        scanners_used = list(set(result.scanner_name for result in summary.results))
+        scanners_used.sort()
+        
+        # Calculate targets count
+        targets_count = len(set(result.target.path for result in summary.results))
+        
+        metadata = {
+            'scan_id': summary.scan_id,
+            'timestamp': summary.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'scan_type': self._infer_scan_type(summary),
+            'description': self._generate_scan_description(summary),
+            'targets_count': targets_count,
+            'total_findings': summary.total_findings,
+            'scanners_used': scanners_used,
+            'created_by': 'security-scanner',
+            'created_at': summary.start_time.isoformat(),
+            'duration': summary.duration
+        }
+        
+        metadata_file = scan_dir / "metadata" / "scan_metadata.json"
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=2)
+    
+    def _generate_index_files(self, base_dir: str) -> None:
+        """Generate index.html files using the index generator."""
+        try:
+            # Import and run the index generator
+            import sys
+            import subprocess
+            from pathlib import Path
+            
+            # Get the path to the index generator script
+            script_dir = Path(__file__).parent.parent
+            index_generator_path = script_dir / "utils" / "index_generator.py"
+            
+            if index_generator_path.exists():
+                # Run the index generator
+                subprocess.run([
+                    sys.executable, str(index_generator_path), base_dir
+                ], check=True, capture_output=True, text=True)
+                self.logger.info(f"Generated index files for reports in: {base_dir}")
+            else:
+                self.logger.warning(f"Index generator not found at: {index_generator_path}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to generate index files: {e}")
+    
+    def _get_safe_target_name(self, target_path: str) -> str:
+        """Convert target path to safe directory name."""
+        if target_path.startswith('docker://') or target_path.startswith('registry://'):
+            # Handle Docker images
+            name = target_path.replace('docker://', '').replace('registry://', '')
+            name = name.replace(':', '_').replace('/', '_')
+        else:
+            # Handle file paths and other targets
+            name = Path(target_path).name or target_path.replace('/', '_').replace('\\', '_')
+        
+        # Make safe for filesystem
+        safe_name = ''.join(c for c in name if c.isalnum() or c in ('_', '-', '.'))
+        return safe_name or 'unknown_target'
+    
+    def _infer_scan_type(self, summary: ScanSummary) -> str:
+        """Infer scan type from targets."""
+        target_types = set(result.target.target_type.value for result in summary.results)
+        
+        if 'docker' in target_types:
+            return 'container'
+        elif 'git' in target_types:
+            return 'source_code'
+        elif 'kubernetes' in target_types:
+            return 'kubernetes'
+        elif 'terraform' in target_types:
+            return 'infrastructure'
+        else:
+            return 'mixed'
+    
+    def _generate_scan_description(self, summary: ScanSummary) -> str:
+        """Generate a description for the scan."""
+        target_types = set(result.target.target_type.value for result in summary.results)
+        targets_count = len(set(result.target.path for result in summary.results))
+        scanners_count = len(set(result.scanner_name for result in summary.results))
+        
+        if 'docker' in target_types:
+            return f"Container security scan for {targets_count} image{'s' if targets_count != 1 else ''}"
+        elif 'git' in target_types:
+            return f"Source code security scan for {targets_count} repositor{'ies' if targets_count != 1 else 'y'}"
+        elif 'kubernetes' in target_types:
+            return f"Kubernetes security scan for {targets_count} manifest{'s' if targets_count != 1 else ''}"
+        elif 'terraform' in target_types:
+            return f"Infrastructure security scan for {targets_count} Terraform file{'s' if targets_count != 1 else ''}"
+        else:
+            return f"Security scan for {targets_count} target{'s' if targets_count != 1 else ''} using {scanners_count} scanner{'s' if scanners_count != 1 else ''}"

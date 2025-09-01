@@ -361,8 +361,8 @@ class ScanRequest:
         if self.scan_request.id:
             return self.scan_request.id
         
-        # Generate based on description or timestamp
-        timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+        # Generate human-readable timestamp format: YYYY-MM-DD_HH-MM-SS
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         if self.scan_request.description:
             # Create a safe filename from description
             safe_desc = "".join(c for c in self.scan_request.description if c.isalnum() or c in (' ', '-', '_')).rstrip()

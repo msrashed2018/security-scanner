@@ -26,11 +26,13 @@ class SarifFormatter(BaseFormatter):
     def generate_report(self, summary: ScanSummary, output_config: OutputConfig) -> str:
         """Generate SARIF report."""
         
-        # Create output directory
-        output_dir = self._create_output_directory(output_config, summary.scan_id)
+        # Use hierarchical structure: place SARIF files in raw-data subdirectory
+        scan_dir = Path(output_config.base_dir) / summary.scan_id
+        output_dir = scan_dir / "raw-data"
+        output_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate SARIF report
-        sarif_file = self._get_output_file_path(output_dir, summary.scan_id)
+        sarif_file = output_dir / f"{summary.scan_id}.sarif"
         sarif_content = self._generate_sarif_json(summary)
         self._write_file(sarif_file, sarif_content)
         

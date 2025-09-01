@@ -2,7 +2,7 @@
 # Focused on Docker images and container security
 
 scan_request:
-  description: "Container security scan focusing on Docker images"
+  description: "Container scan"
 
 # Scan Targets - container focused
 targets:
@@ -29,7 +29,13 @@ scanners:
     enabled: true
     timeout: 300
     severity_threshold: "MEDIUM"
-    additional_args: []
+    additional_args:
+      - "--cache-dir=/tmp/grype-cache"
+      - "--db-auto-update=false"
+      - "--scope=squashed"
+      - "--only-fixed"
+      - "--by-cve"
+      - "--show-suppressed=false"
   
   syft:
     enabled: true
@@ -63,7 +69,7 @@ scanners:
 
 # Output Configuration
 output:
-  base_dir: "container-security-reports"
+  base_dir: "reports"
   formats:
     - "json"
     - "html"
