@@ -84,15 +84,16 @@ RUN set -eux; \
 
 # Copy Python application
 COPY requirements.txt /app/requirements.txt
-COPY security_scanner/ /app/security_scanner/
-COPY config/ /app/config/
+COPY src/ /app/src/
+COPY examples/ /app/examples/
+COPY templates/ /app/templates/
 
 # Install Python application dependencies
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Set Python path and create entrypoint
 ENV PYTHONPATH="/app"
-RUN echo '#!/bin/bash\ncd /app && python -m security_scanner "$@"' > /usr/local/bin/security-scanner && \
+RUN echo '#!/bin/bash\ncd /app && python -m src "$@"' > /usr/local/bin/security-scanner && \
     chmod +x /usr/local/bin/security-scanner
 
 # Create reports directory and set working directory

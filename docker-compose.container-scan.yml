@@ -1,0 +1,58 @@
+# Container Security Scan with Docker Compose
+# Scans Docker images for vulnerabilities and misconfigurations
+# Usage: docker-compose -f docker-compose.container-scan.yml up
+version: '3.8'
+
+services:
+  security-scanner:
+    image: ghcr.io/your-org/security-scanner:latest
+    container_name: security-scanner-containers
+    volumes:
+      # Mount Docker socket to scan local images
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount output directory for reports
+      - ./container-security-reports:/app/reports
+      # Mount custom scan configuration
+      - ./templates/scan-requests/container-scan.yaml:/app/config/container-scan.yaml:ro
+    environment:
+      - PYTHONPATH=/app
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    command: >
+      sh -c "
+      # Generate container scan template
+      security-scanner --generate-template container-scan > /tmp/container-scan.yaml &&
+      # Configure images to scan (customize these)
+      sed -i 's|docker_images: \\[\\]|docker_images: [\"nginx:latest\", \"node:18-alpine\", \"python:3.13-slim\"]|g' /tmp/container-scan.yaml &&
+      # Run the scan
+      security-scanner /tmp/container-scan.yaml
+      "
+    networks:
+      - security-scan
+    restart: "no"
+
+  # Optional: Scan results viewer (simple web server)
+  report-viewer:
+    image: nginx:alpine
+    container_name: security-reports-viewer
+    ports:
+      - "8080:80"
+    volumes:
+      - ./container-security-reports:/usr/share/nginx/html:ro
+    depends_on:
+      - security-scanner
+    networks:
+      - security-scan
+    profiles:
+      - viewer
+
+networks:
+  security-scan:
+    driver: bridge
+
+# Usage:
+# docker-compose -f docker-compose.container-scan.yml up security-scanner
+# 
+# To also start the report viewer:
+# docker-compose -f docker-compose.container-scan.yml --profile viewer up
+#
+# View reports at: http://localhost:8080
