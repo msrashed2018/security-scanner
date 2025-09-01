@@ -1,0 +1,87 @@
+# GitLab CI Security Scan Template
+# Optimized for GitLab CI/CD pipeline integration
+
+scan_request:
+  description: "GitLab CI/CD security scan"
+  created_by: "gitlab-ci"
+
+# Scan Targets - CI/CD focused
+targets:
+  docker_images: []
+  git_repositories: ["."]
+  kubernetes_manifests: []
+  terraform_code: []
+  filesystem_paths: []
+
+# Scanner Configuration - GitLab CI optimized
+scanners:
+  trivy:
+    enabled: true
+    timeout: 400
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--ignore-unfixed"
+      - "--format=json"
+  
+  semgrep:
+    enabled: true
+    timeout: 500
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--config=p/security-audit"
+      - "--gitlab-sast"
+      - "--gitlab-secrets"
+  
+  gitleaks:
+    enabled: true
+    timeout: 200
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--report-format=sarif"
+  
+  checkov:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--quiet"
+      - "--output=json"
+  
+  # Disable heavy scanners for CI speed
+  trufflehog:
+    enabled: false
+  grype:
+    enabled: false
+  syft:
+    enabled: false
+  dockle:
+    enabled: false
+  hadolint:
+    enabled: false
+  conftest:
+    enabled: false
+
+# Output Configuration
+output:
+  base_dir: "gitlab-security-reports"
+  formats:
+    - "json"
+    - "sarif"
+  include_raw: false
+  generate_executive_summary: false
+
+# Execution Settings
+execution:
+  parallel_scans: true
+  max_workers: 3
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "ERROR"
+  file: null
+
+# Metadata
+metadata:
+  environment: "ci-cd"
+  platform: "gitlab-ci"

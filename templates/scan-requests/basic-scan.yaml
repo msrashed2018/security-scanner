@@ -3,22 +3,15 @@
 
 # Scan Metadata
 scan_request:
-  id: "custom-scan-001"  # Optional custom scan ID
-  description: "Comprehensive security scan of web application"
+  description: "Basic security scan with essential scanners"
 
 # Scan Targets - specify what to scan
 targets:
-  docker_images:
-    - "nginx:latest"
-    - "myapp:v1.2.3"
-  git_repositories:
-    - "/path/to/source/code"
-  kubernetes_manifests:
-    - "/path/to/k8s/deployment.yaml"
-  terraform_code:
-    - "/path/to/terraform/"
-  filesystem_paths:
-    - "/path/to/additional/files"
+  docker_images: []
+  git_repositories: ["."]  # Current directory
+  kubernetes_manifests: []
+  terraform_code: []
+  filesystem_paths: []
 
 # Scanner Configuration - which scanners to run and their settings
 scanners:
@@ -45,6 +38,16 @@ scanners:
     enabled: false
   hadolint:
     enabled: false
+  trufflehog:
+    enabled: false
+  gitleaks:
+    enabled: false
+  checkov:
+    enabled: false
+  syft:
+    enabled: false
+  conftest:
+    enabled: false
 
 # Output Configuration
 output:
@@ -61,12 +64,9 @@ output:
 execution:
   parallel_scans: true
   max_workers: 4
-  fail_on_high_severity: true
+  fail_on_high_severity: false
 
 # Logging Configuration
 logging:
   level: "INFO"
   file: "scan.log"
-
-# Optional: Use presets (alternative to detailed scanner config)
-# preset: "web-app-scan"

@@ -1,0 +1,107 @@
+# Multi-Target Security Scan Example
+# Demonstrates scanning multiple target types
+
+scan_request:
+  description: "Multi-target comprehensive security scan"
+
+# Multiple target types
+targets:
+  docker_images:
+    - "nginx:latest"
+    - "node:18-alpine"
+  git_repositories:
+    - "/workspace/frontend"
+    - "/workspace/backend"
+  kubernetes_manifests:
+    - "./k8s/production/"
+  terraform_code:
+    - "./infrastructure/aws/"
+  filesystem_paths:
+    - "./config/"
+
+# Comprehensive scanner configuration
+scanners:
+  trivy:
+    enabled: true
+    timeout: 900
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--dependency-tree"
+      - "--ignore-unfixed"
+  
+  grype:
+    enabled: true
+    timeout: 600
+    severity_threshold: "MEDIUM"
+  
+  semgrep:
+    enabled: true
+    timeout: 1200
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--config=p/security-audit"
+      - "--config=p/owasp-top-10"
+  
+  trufflehog:
+    enabled: true
+    timeout: 900
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--no-verification"
+  
+  gitleaks:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+  
+  checkov:
+    enabled: true
+    timeout: 900
+    severity_threshold: "MEDIUM"
+    additional_args: ["--quiet"]
+  
+  dockle:
+    enabled: true
+    timeout: 600
+    severity_threshold: "MEDIUM"
+  
+  hadolint:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+  
+  syft:
+    enabled: true
+    timeout: 300
+    severity_threshold: "INFO"
+  
+  conftest:
+    enabled: false
+
+# Comprehensive output
+output:
+  base_dir: "multi-target-security-scan"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  generate_executive_summary: true
+
+# Balanced execution
+execution:
+  parallel_scans: true
+  max_workers: 6
+  fail_on_high_severity: true
+
+# Detailed logging
+logging:
+  level: "INFO"
+  file: "multi-target-scan.log"
+
+# Rich metadata
+metadata:
+  project: "multi-service-application"
+  environment: "production"
+  team: "security-team"
+  compliance: ["soc2", "pci-dss"]

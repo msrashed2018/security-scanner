@@ -1,0 +1,90 @@
+# Infrastructure as Code Security Scan Template
+# Focused on Kubernetes, Terraform, and IaC security
+
+scan_request:
+  description: "Infrastructure as Code security analysis"
+
+# Scan Targets - infrastructure focused
+targets:
+  docker_images: []
+  git_repositories: []
+  kubernetes_manifests:
+    - "./k8s/"
+    - "./kubernetes/"
+  terraform_code:
+    - "./terraform/"
+    - "./tf/"
+  filesystem_paths: []
+
+# Scanner Configuration - IaC security focused
+scanners:
+  checkov:
+    enabled: true
+    timeout: 900
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--quiet"
+      - "--framework=terraform"
+      - "--framework=kubernetes"
+  
+  conftest:
+    enabled: false  # Requires policy files - enable if you have OPA policies
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--policy=./policies/"
+  
+  # Enable for Dockerfile analysis in IaC repos
+  hadolint:
+    enabled: true
+    timeout: 300
+    severity_threshold: "MEDIUM"
+    additional_args: []
+  
+  # Enable secrets detection for IaC files
+  trufflehog:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--no-verification"
+      - "--filter-entropy=3.0"
+  
+  gitleaks:
+    enabled: true
+    timeout: 300
+    severity_threshold: "HIGH"
+    additional_args: []
+  
+  # Disable non-IaC scanners
+  trivy:
+    enabled: false
+  grype:
+    enabled: false
+  syft:
+    enabled: false
+  dockle:
+    enabled: false
+  semgrep:
+    enabled: false
+
+# Output Configuration
+output:
+  base_dir: "infrastructure-security-reports"
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  include_raw: true
+  generate_executive_summary: true
+
+# Execution Settings
+execution:
+  parallel_scans: true
+  max_workers: 3
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "infrastructure-scan.log"

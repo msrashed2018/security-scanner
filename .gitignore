@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
 
 # C extensions
@@ -205,3 +205,66 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Security Scanner specific ignores
+# Scan report directories - these contain sensitive security findings
+security-reports/
+reports/
+scan-results/
+*-security-reports/
+*-security-scan/
+*-security-audit/
+*-scan-reports/
+dev-security-check/
+ci-cd-security-reports/
+secrets-scan-reports/
+container-security-reports/
+source-code-security-reports/
+infrastructure-security-reports/
+comprehensive-security-audit/
+github-actions-security-reports/
+gitlab-security-reports/
+multi-target-security-scan/
+
+# Log files from scans
+*.log
+scan.log
+security-audit.log
+container-scan.log
+source-code-scan.log
+infrastructure-scan.log
+secrets-scan.log
+multi-target-scan.log
+
+# Temporary scan files
+*.tmp
+scan-*.tmp
+security-*.tmp
+
+# Scanner cache and temporary data
+.scanner-cache/
+.trivy/
+.grype/
+.semgrep/
+
+# Raw scanner outputs that might contain sensitive data
+raw_output/
+scanner_raw/
+
+# User-specific scan configurations (may contain sensitive paths/credentials)
+my-scan.yaml
+user-scan.yaml
+personal-scan.yaml
+local-scan.yaml
+*-local.yaml
+*-personal.yaml
+
+# IDE and editor files for scan configs
+*.swp
+*.swo
+*~
+
+# Test scan results and outputs
+test-reports/
+test-scan-results/
+example-reports/

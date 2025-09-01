@@ -1,0 +1,86 @@
+# GitHub Actions CI/CD Security Scan Template
+# Optimized for GitHub Actions integration
+
+scan_request:
+  description: "GitHub Actions CI/CD security scan"
+  created_by: "github-actions"
+
+# Scan Targets - CI/CD focused
+targets:
+  docker_images: []
+  git_repositories: ["."]  # Current repository
+  kubernetes_manifests: []
+  terraform_code: []
+  filesystem_paths: []
+
+# Scanner Configuration - CI/CD optimized
+scanners:
+  trivy:
+    enabled: true
+    timeout: 300
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--ignore-unfixed"
+      - "--timeout=5m"
+  
+  semgrep:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--config=p/security-audit"
+      - "--config=p/owasp-top-10"
+      - "--timeout=300"
+  
+  trufflehog:
+    enabled: true
+    timeout: 300
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--no-verification"
+      - "--since-commit=HEAD~1"  # Only scan recent changes
+  
+  gitleaks:
+    enabled: true
+    timeout: 180
+    severity_threshold: "HIGH"
+    additional_args: []
+  
+  # Disable slower scanners for CI/CD
+  grype:
+    enabled: false
+  syft:
+    enabled: false
+  dockle:
+    enabled: false
+  hadolint:
+    enabled: false
+  checkov:
+    enabled: false
+  conftest:
+    enabled: false
+
+# Output Configuration - CI/CD optimized
+output:
+  base_dir: "github-actions-security-reports"
+  formats:
+    - "sarif"  # GitHub native format
+    - "json"
+  include_raw: false
+  generate_executive_summary: false
+
+# Execution Settings - fast execution for CI/CD
+execution:
+  parallel_scans: true
+  max_workers: 4
+  fail_on_high_severity: true
+
+# Logging Configuration
+logging:
+  level: "WARNING"  # Minimal logging for CI/CD
+  file: null
+
+# Metadata
+metadata:
+  environment: "ci-cd"
+  platform: "github-actions"

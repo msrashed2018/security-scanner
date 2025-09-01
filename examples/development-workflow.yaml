@@ -1,0 +1,64 @@
+# Development Workflow Security Scan
+# Fast, developer-friendly security checks
+
+scan_request:
+  description: "Development workflow security check"
+
+# Scan current working directory
+targets:
+  git_repositories: ["."]
+
+# Quick scanners for fast feedback
+scanners:
+  semgrep:
+    enabled: true
+    timeout: 300
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--config=p/security-audit"
+  
+  trufflehog:
+    enabled: true
+    timeout: 180
+    severity_threshold: "HIGH"
+    additional_args:
+      - "--since-commit=HEAD~5"  # Last 5 commits
+  
+  gitleaks:
+    enabled: true
+    timeout: 120
+    severity_threshold: "HIGH"
+  
+  # Disable slower scanners
+  trivy:
+    enabled: false
+  grype:
+    enabled: false
+  syft:
+    enabled: false
+  dockle:
+    enabled: false
+  hadolint:
+    enabled: false
+  checkov:
+    enabled: false
+  conftest:
+    enabled: false
+
+# Simple output for developers
+output:
+  base_dir: "dev-security-check"
+  formats: ["json"]
+  include_raw: false
+  generate_executive_summary: false
+
+# Fast execution
+execution:
+  parallel_scans: true
+  max_workers: 2
+  fail_on_high_severity: false
+
+# Minimal logging
+logging:
+  level: "WARNING"
+  file: null
