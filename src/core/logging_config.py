@@ -5,15 +5,54 @@ Logging configuration for the security scanner service.
 import logging
 import logging.handlers
 import sys
+import os
 from pathlib import Path
 from typing import Optional
+
+
+class ColoredFormatter(logging.Formatter):
+    """Formatter that adds colors to log levels."""
+    
+    # ANSI color codes
+    COLORS = {
+        'DEBUG': '\033[36m',      # Cyan
+        'INFO': '\033[32m',       # Green  
+        'WARNING': '\033[33m',    # Yellow
+        'ERROR': '\033[31m',      # Red
+        'CRITICAL': '\033[35m',   # Magenta
+    }
+    
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    
+    def format(self, record):
+        # Add color to level name
+        if record.levelname in self.COLORS:
+            colored_level = f"{self.COLORS[record.levelname]}{self.BOLD}{record.levelname}{self.RESET}"
+            
+            # Create a copy of the record to modify
+            record_copy = logging.makeLogRecord(record.__dict__)
+            record_copy.levelname = colored_level
+            
+            # Format the message
+            formatted = super().format(record_copy)
+            
+            # Add special coloring for success/error indicators
+            formatted = formatted.replace('✓', f'{self.COLORS["INFO"]}✓{self.RESET}')
+            formatted = formatted.replace('✗', f'{self.COLORS["ERROR"]}✗{self.RESET}')
+            formatted = formatted.replace('⚠', f'{self.COLORS["WARNING"]}⚠{self.RESET}')
+            
+            return formatted
+        else:
+            return super().format(record)
 
 
 def setup_logging(
     log_level: str = "INFO",
     log_file: Optional[str] = None,
     log_format: Optional[str] = None,
-    enable_console: bool = True
+    enable_console: bool = True,
+    enable_colors: bool = None
 ) -> logging.Logger:
     """
     Set up logging configuration for the security scanner.
@@ -45,8 +84,15 @@ def setup_logging(
     # Clear any existing handlers
     logger.handlers.clear()
     
+    # Determine if colors should be enabled
+    if enable_colors is None:
+        enable_colors = sys.stdout.isatty() and os.getenv('NO_COLOR') is None
+    
     # Create formatter
-    formatter = logging.Formatter(log_format)
+    if enable_console and enable_colors:
+        formatter = ColoredFormatter(log_format)
+    else:
+        formatter = logging.Formatter(log_format)
     
     # Console handler
     if enable_console:

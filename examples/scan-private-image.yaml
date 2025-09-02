@@ -30,7 +30,7 @@ scanners:
     severity_threshold: "MEDIUM"
     additional_args:
       
-      - "--db-auto-update=false"
+      
       - "--scope=squashed"
       - "--only-fixed"
       - "--by-cve"

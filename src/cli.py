@@ -330,7 +330,8 @@ def run_scan(scan_request_path: str) -> int:
         setup_logging(
             log_level=config.log_level,
             log_file=scan_request.logging.get('file'),
-            enable_console=True
+            enable_console=True,
+            enable_colors=True
         )
         configure_third_party_loggers()
         

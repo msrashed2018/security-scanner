@@ -101,18 +101,48 @@ class ReportIndexGenerator:
     
     def _is_scan_directory(self, path: Path) -> bool:
         """Check if a directory is a scan directory based on naming pattern."""
-        # Check for timestamp pattern: YYYY-MM-DD_HH-MM-SS
         name = path.name
+        
+        # Check for common scan directory patterns
+        scan_patterns = (
+            "security-scan-",
+            "container-", 
+            "git-", 
+            "k8s-", 
+            "terraform-", 
+            "filesystem-",
+            "scan-"
+        )
+        
+        # First check if it starts with known scan patterns
+        if name.startswith(scan_patterns):
+            return True
+        
+        # Check for pure timestamp pattern: YYYY-MM-DD_HH-MM-SS
         try:
             datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
             return True
         except ValueError:
-            # Also accept old format for backward compatibility
-            return name.startswith(("container-", "git-", "k8s-", "terraform-", "filesystem-"))
+            pass
+        
+        # Check if it contains timestamp at the end
+        if "_" in name:
+            timestamp_part = name.split("_")[-2] + "_" + name.split("_")[-1]
+            try:
+                datetime.strptime(timestamp_part, "%Y-%m-%d_%H-%M-%S")
+                return True
+            except (ValueError, IndexError):
+                pass
+        
+        # Check if directory contains scan-like structure
+        if (path / "targets").exists() or (path / "summary").exists() or (path / "raw-data").exists():
+            return True
+        
+        return False
     
     def _get_scan_summary(self, scan_dir: Path) -> Dict[str, Any]:
         """Get summary information for a scan directory."""
-        metadata_file = scan_dir / "metadata.json"
+        metadata_file = scan_dir / "metadata" / "scan_metadata.json"
         summary = {
             "scan_id": scan_dir.name,
             "scan_dir": scan_dir.name,
@@ -173,7 +203,7 @@ class ReportIndexGenerator:
         # Count scanners
         scanners_dir = target_dir / "scanners"
         if scanners_dir.exists():
-            scanners = [d.name for d in scanners_dir.iterdir() if d.is_dir()]
+            scanners = [f.stem for f in scanners_dir.iterdir() if f.is_file() and f.suffix == '.json']
             summary["scanners"] = scanners
             summary["scanners_count"] = len(scanners)
         
@@ -201,25 +231,29 @@ class ReportIndexGenerator:
             return []
         
         scanners = []
-        for scanner_dir in scanners_dir.iterdir():
-            if scanner_dir.is_dir():
+        for scanner_file in scanners_dir.iterdir():
+            if scanner_file.is_file() and scanner_file.suffix == '.json':
+                scanner_name = scanner_file.stem
                 scanner_summary = {
-                    "name": scanner_dir.name,
+                    "name": scanner_name,
                     "findings_count": 0,
-                    "has_report": (scanner_dir / "report.html").exists(),
-                    "has_findings": (scanner_dir / "findings.json").exists(),
-                    "has_raw": (scanner_dir / "raw_output.txt").exists()
+                    "has_report": False,  # Will be generated dynamically
+                    "has_findings": True,  # JSON file exists
+                    "has_raw": True,  # JSON contains raw data
+                    "json_file": scanner_file.name
                 }
                 
-                # Count findings
-                findings_file = scanner_dir / "findings.json"
-                if findings_file.exists():
-                    try:
-                        with open(findings_file, 'r') as f:
-                            findings = json.load(f)
+                # Count findings from the JSON file
+                try:
+                    with open(scanner_file, 'r') as f:
+                        scanner_data = json.load(f)
+                        if isinstance(scanner_data, dict) and 'findings' in scanner_data:
+                            findings = scanner_data['findings']
                             scanner_summary["findings_count"] = len(findings) if isinstance(findings, list) else 0
-                    except Exception:
-                        pass
+                        elif isinstance(scanner_data, list):
+                            scanner_summary["findings_count"] = len(scanner_data)
+                except Exception as e:
+                    logger.warning(f"Failed to load scanner data from {scanner_file}: {e}")
                 
                 scanners.append(scanner_summary)
         
@@ -236,20 +270,22 @@ class ReportIndexGenerator:
                 if target_dir.is_dir():
                     scanners_dir = target_dir / "scanners"
                     if scanners_dir.exists():
-                        for scanner_dir in scanners_dir.iterdir():
-                            if scanner_dir.is_dir():
-                                scanners_used.add(scanner_dir.name)
+                        for scanner_file in scanners_dir.iterdir():
+                            if scanner_file.is_file() and scanner_file.suffix == '.json':
+                                scanners_used.add(scanner_file.stem)
                                 
-                                # Count findings
-                                findings_file = scanner_dir / "findings.json"
-                                if findings_file.exists():
-                                    try:
-                                        with open(findings_file, 'r') as f:
-                                            findings = json.load(f)
+                                # Count findings from scanner JSON file
+                                try:
+                                    with open(scanner_file, 'r') as f:
+                                        scanner_data = json.load(f)
+                                        if isinstance(scanner_data, dict) and 'findings' in scanner_data:
+                                            findings = scanner_data['findings']
                                             if isinstance(findings, list):
                                                 total_findings += len(findings)
-                                    except Exception:
-                                        pass
+                                        elif isinstance(scanner_data, list):
+                                            total_findings += len(scanner_data)
+                                except Exception:
+                                    pass
         
         return {
             "scanners_used": sorted(list(scanners_used)),
@@ -305,6 +341,7 @@ class ReportIndexGenerator:
                     <div class="scan-actions">
                         <a href="{scan['scan_dir']}/summary/executive_summary.html" class="btn btn-primary">📋 Executive Summary</a>
                         <a href="{scan['scan_dir']}/summary/detailed_report.html" class="btn btn-secondary">📄 Detailed Report</a>
+                        <a href="{scan['scan_dir']}/findings-browser.html" class="btn btn-primary">🔍 Browse Findings</a>
                         <a href="{scan['scan_dir']}/index.html" class="btn btn-outline">🔍 Browse Results</a>
                     </div>
                 </div>
@@ -375,6 +412,7 @@ class ReportIndexGenerator:
                     </div>
                     <div class="target-actions">
                         <a href="targets/{target['name']}/index.html" class="btn btn-primary">🔍 View Details</a>
+                        <a href="targets/{target['name']}/findings.html" class="btn btn-secondary">🔍 Browse Findings</a>
                         <a href="targets/{target['name']}/combined_findings.json" class="btn btn-outline">📄 JSON Report</a>
                     </div>
                 </div>
@@ -403,12 +441,14 @@ class ReportIndexGenerator:
             </div>
         </header>
         
-        <div class="summary-actions">
+                <div class="summary-actions">
             <a href="summary/executive_summary.html" class="btn btn-primary">📋 Executive Summary</a>
             <a href="summary/detailed_report.html" class="btn btn-secondary">📄 Detailed Report</a>
-            <a href="summary/findings_summary.json" class="btn btn-outline">📊 JSON Summary</a>
-            <a href="summary/scan_summary.sarif" class="btn btn-outline">🔧 SARIF Report</a>
-        </div>
+            <a href="findings-browser.html" class="btn btn-primary">🔍 Browse Findings</a>
+            <a href="raw-data/{scan_summary['scan_id']}_findings.json" class="btn btn-outline">📊 JSON Summary</a>
+            <a href="raw-data/{scan_summary['scan_id']}.sarif" class="btn btn-outline">🔧 SARIF Report</a>
+        </div></search>
+</search_and_replace>
         
         <main class="main-content">
             <h2>🎯 Scan Targets</h2>
@@ -450,9 +490,8 @@ class ReportIndexGenerator:
                         {' '.join(status_badges)}
                     </div>
                     <div class="scanner-actions">
-                        {f'<a href="scanners/{scanner["name"]}/report.html" class="btn btn-primary">📋 View Report</a>' if scanner["has_report"] else ''}
-                        {f'<a href="scanners/{scanner["name"]}/findings.json" class="btn btn-outline">📄 JSON</a>' if scanner["has_findings"] else ''}
-                        {f'<a href="scanners/{scanner["name"]}/raw_output.txt" class="btn btn-outline">📝 Raw</a>' if scanner["has_raw"] else ''}
+                        <a href="scanners/{scanner['json_file']}" class="btn btn-primary">📋 View JSON Report</a>
+                        <a href="scanners/scanner-report-{scanner['name']}.html" class="btn btn-secondary">📄 HTML View</a>
                     </div>
                 </div>
                 """
@@ -486,7 +525,8 @@ class ReportIndexGenerator:
         </header>
         
         <div class="summary-actions">
-            <a href="combined_findings.json" class="btn btn-primary">📄 Combined Findings (JSON)</a>
+            <a href="findings.html" class="btn btn-primary">🔍 Browse Findings</a>
+            <a href="combined_findings.json" class="btn btn-outline">📄 Combined Findings (JSON)</a>
         </div>
         
         <main class="main-content">
