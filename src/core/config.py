@@ -135,13 +135,6 @@ class SecurityScanConfig:
                 additional_args=["--quiet"],
                 description="Static code analysis for Infrastructure as Code"
             ),
-            'kics': ScannerConfig(
-                enabled=True,
-                timeout=300,
-                severity_threshold="MEDIUM",
-                additional_args=[],
-                description="Security scanner for Infrastructure as Code"
-            ),
             'conftest': ScannerConfig(
                 enabled=True,
                 timeout=300,
@@ -354,8 +347,8 @@ class SecurityScanConfig:
         result = {}
         
         # Add scanner configurations
-        for scanner_name in ['trivy', 'grype', 'syft', 'dockle', 'hadolint', 
-                           'checkov', 'kics', 'conftest', 'trufflehog', 'gitleaks', 'semgrep']:
+        for scanner_name in ['trivy', 'grype', 'syft', 'dockle', 'hadolint',
+                           'checkov', 'conftest', 'trufflehog', 'gitleaks', 'semgrep']:
             scanner_config = getattr(self, scanner_name)
             result[scanner_name] = {
                 'enabled': scanner_config.enabled,
@@ -406,8 +399,8 @@ class SecurityScanConfig:
     def get_enabled_scanners(self) -> Set[str]:
         """Get list of enabled scanners."""
         enabled = set()
-        for scanner_name in ['trivy', 'grype', 'syft', 'dockle', 'hadolint', 
-                           'checkov', 'kics', 'conftest', 'trufflehog', 'gitleaks', 'semgrep']:
+        for scanner_name in ['trivy', 'grype', 'syft', 'dockle', 'hadolint',
+                           'checkov', 'conftest', 'trufflehog', 'gitleaks', 'semgrep']:
             scanner_config = getattr(self, scanner_name)
             if scanner_config.enabled:
                 enabled.add(scanner_name)

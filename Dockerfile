@@ -10,7 +10,6 @@ ARG DOCKLE_VERSION=0.4.15
 ARG GITLEAKS_VERSION=8.28.0
 ARG GRYPE_VERSION=0.99.1
 ARG HADOLINT_VERSION=2.12.0
-# KICS installed via pip - version 3.8.1
 ARG SEMGREP_VERSION=1.134.0
 ARG SYFT_VERSION=1.32.0
 ARG TRIVY_VERSION=0.65.0
@@ -57,10 +56,6 @@ RUN set -eux; \
 RUN set -eux; \
     curl -sSL -o ${BIN_DIR}/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-Linux-x86_64"; \
     chmod +x ${BIN_DIR}/hadolint
-
-# ---- KICS ----
-# NOTE: KICS removed due to unreliable installation methods
-# Users can run KICS via Docker: docker run checkmarx/kics:latest
 
 # ---- Syft ----
 RUN set -eux; \

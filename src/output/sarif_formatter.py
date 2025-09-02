@@ -242,7 +242,6 @@ class SarifFormatter(BaseFormatter):
             "dockle": "https://github.com/goodwithtech/dockle",
             "hadolint": "https://github.com/hadolint/hadolint",
             "checkov": "https://github.com/bridgecrewio/checkov",
-            "kics": "https://github.com/Checkmarx/kics",
             "conftest": "https://github.com/open-policy-agent/conftest",
             "trufflehog": "https://github.com/trufflesecurity/trufflehog",
             "gitleaks": "https://github.com/zricethezav/gitleaks"

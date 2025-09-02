@@ -12,7 +12,6 @@ from .syft import SyftScanner
 from .dockle import DockleScanner
 from .hadolint import HadolintScanner
 from .checkov import CheckovScanner
-# from .kics import KicsScanner  # KICS removed due to unreliable installation
 from .conftest import ConftestScanner
 from .trufflehog import TruffleHogScanner
 from .gitleaks import GitLeaksScanner
@@ -26,7 +25,6 @@ AVAILABLE_SCANNERS = {
     'dockle': DockleScanner,
     'hadolint': HadolintScanner,
     'checkov': CheckovScanner,
-    # 'kics': KicsScanner,  # KICS removed due to unreliable installation
     'conftest': ConftestScanner,
     'trufflehog': TruffleHogScanner,
     'gitleaks': GitLeaksScanner,
@@ -42,7 +40,6 @@ __all__ = [
     'DockleScanner',
     'HadolintScanner',
     'CheckovScanner',
-    # 'KicsScanner',  # KICS removed due to unreliable installation
     'ConftestScanner',
     'TruffleHogScanner',
     'GitLeaksScanner',

@@ -251,11 +251,48 @@ security-scan:
 
 ## Output Formats
 
+### Hierarchical Report Structure
+
+The security scanner now generates reports in a well-organized hierarchical structure:
+
+```
+reports/
+├── index.html                                    # Auto-generated main index
+├── container-scan-2025-09-01_20-04-46/          # Human-readable scan ID
+│   ├── index.html                               # Auto-generated scan index
+│   ├── summary/                                 # Executive and detailed reports
+│   │   ├── executive_summary.html
+│   │   └── detailed_report.html
+│   ├── targets/                                 # Target-specific reports
+│   │   ├── nginx/
+│   │   │   ├── combined_findings.json
+│   │   │   └── scanners/
+│   │   │       ├── trivy.json
+│   │   │       ├── grype.json
+│   │   │       └── syft.json
+│   │   └── ubuntu/
+│   │       ├── combined_findings.json
+│   │       └── scanners/
+│   ├── raw-data/                               # JSON and SARIF outputs
+│   │   ├── container-scan-2025-09-01_20-04-46_summary.json
+│   │   ├── container-scan-2025-09-01_20-04-46_findings.json
+│   │   └── container-scan-2025-09-01_20-04-46.sarif
+│   └── metadata/                               # Scan metadata
+│       └── scan_metadata.json
+```
+
+### Report Features
+- **Automatic Index Generation**: Navigation pages at all levels
+- **Target Organization**: Results grouped by scan target
+- **Multiple Formats**: JSON, HTML, and SARIF reports
+- **Executive Summaries**: High-level security reports for management
+- **Raw Data Access**: Complete scanner outputs in structured format
+
 ### JSON Report
 ```json
 {
-  "scan_id": "scan-20240301-123456-abc123",
-  "start_time": "2024-03-01T12:34:56Z",
+  "scan_id": "container-scan-2025-09-01_20-04-46",
+  "start_time": "2025-09-01T20:04:46Z",
   "summary": {
     "total_findings": 42,
     "critical": 2,
