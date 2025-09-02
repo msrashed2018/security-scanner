@@ -19,7 +19,7 @@ ARG TRUFFLEHOG_VERSION=3.90.5
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      ca-certificates curl wget git jq tar unzip gnupg libmagic1; \
+      ca-certificates curl wget git jq tar unzip gnupg libmagic1 file; \
     rm -rf /var/lib/apt/lists/*
 
 # ---- Checkov (Python) ----
@@ -94,6 +94,28 @@ RUN echo '#!/bin/bash\ncd /app && python -m src "$@"' > /usr/local/bin/security-
 # Create reports directory and set working directory
 RUN mkdir -p /app/reports && chmod 755 /app/reports
 WORKDIR /app
+
+# Install Docker CLI for target validation (best practice approach)
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        lsb-release; \
+    mkdir -p /etc/apt/keyrings; \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg; \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce-cli; \
+    rm -rf /var/lib/apt/lists/*
+
+# Final validation check - ensure all required tools are available
+RUN set -eux; \
+    for c in \
+      python3 pip checkov conftest dockle gitleaks grype hadolint semgrep syft trivy trufflehog \
+      git docker file \
+    ; do command -v "$c" >/dev/null; done
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

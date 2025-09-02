@@ -157,31 +157,35 @@ class TargetValidator:
             )
             
             if result.returncode == 0:
-                # Image exists locally
+                # Image exists locally - proceed with scan
+                self.logger.info(f"✓ Docker image found locally: {image_name}")
                 return ValidationResult(
                     is_valid=True,
                     metadata={"image_source": "local", "image_name": image_name}
                 )
             
-            # If not local, try to pull the image
-            self.logger.info(f"Attempting to pull Docker image: {image_name}")
-            pull_result = subprocess.run(
-                ["docker", "pull", image_name],
-                capture_output=True,
-                text=True,
-                timeout=self.docker_timeout
-            )
+            # Image not found locally - provide clear guidance
+            self.logger.warning(f"Docker image not found locally: {image_name}")
             
-            if pull_result.returncode == 0:
-                return ValidationResult(
-                    is_valid=True,
-                    metadata={"image_source": "pulled", "image_name": image_name}
-                )
-            else:
-                return ValidationResult(
-                    is_valid=False,
-                    error_message=f"Failed to pull Docker image: {pull_result.stderr.strip()}"
-                )
+            # For security and simplicity, we don't attempt to pull images
+            # Users should pre-pull any images they want to scan
+            guidance_message = f"""Docker image not found locally: {image_name}
+
+For security scanning, please pre-pull the image first:
+
+  docker pull {image_name}
+
+Then run the security scan again.
+
+This approach ensures:
+- No credential management complexity
+- User controls which images to download
+- Clear separation of image management and scanning"""
+            
+            return ValidationResult(
+                is_valid=False,
+                error_message=guidance_message
+            )
         
         except subprocess.TimeoutExpired:
             return ValidationResult(
@@ -431,13 +435,28 @@ class TargetValidator:
     
     def _is_valid_docker_image_name(self, image_name: str) -> bool:
         """Check if Docker image name has valid format."""
+        if not image_name or ' ' in image_name:
+            return False
+        
+        # Docker image names must be lowercase
+        if image_name != image_name.lower():
+            return False
+        
+        # Check for invalid characters like ::
+        if '::' in image_name:
+            return False
+        
         # Basic Docker image name validation
         # Format: [registry/]namespace/repository[:tag|@digest]
         pattern = r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-\.]*[a-zA-Z0-9])?(?:\:[0-9]+)?/)?(?:[a-z0-9](?:[a-z0-9\-_]*[a-z0-9])?/)*[a-z0-9](?:[a-z0-9\-_]*[a-z0-9])?(?:\:[a-zA-Z0-9][\w\.\-]{0,127})?(?:@sha256:[a-f0-9]{64})?$'
-        return bool(re.match(pattern, image_name.lower())) or image_name.count('/') >= 1
+        return bool(re.match(pattern, image_name))
     
     def _is_url(self, path: str) -> bool:
         """Check if path is a URL."""
+        # Handle SSH Git URLs like git@github.com:user/repo.git
+        if '@' in path and ':' in path and not path.startswith('http'):
+            return True
+        
         parsed = urllib.parse.urlparse(path)
         return parsed.scheme in ('http', 'https', 'git', 'ssh')
     

@@ -15,6 +15,7 @@ from .core.exceptions import SecurityScannerError, ScannerNotFoundError
 from .scanners.base import scanner_registry
 from .scanners import AVAILABLE_SCANNERS
 from .output.formatters import OutputFormatterFactory
+from .utils.target_validator import TargetValidator
 
 
 class SecurityScannerService:
@@ -30,6 +31,9 @@ class SecurityScannerService:
         self.config = config
         self.logger = get_logger(__name__)
         self.progress_logger = ScanProgressLogger(self.logger)
+        
+        # Initialize target validator
+        self.target_validator = TargetValidator(logger=self.logger)
         
         # Register all available scanners
         self._register_scanners()
@@ -60,21 +64,56 @@ class SecurityScannerService:
         self.logger.info(f"Starting security scan: {scan_id}")
         self.logger.info(f"Targets: {len(targets)}, Enabled scanners: {list(self.config.get_enabled_scanners())}")
         
-        # Initialize scan summary
+        # Validate targets before scanning
+        self.logger.info("Validating targets before scanning...")
+        validation_results = self.target_validator.validate_targets(targets)
+        validation_summary = self.target_validator.get_validation_summary(validation_results)
+        
+        self.logger.info(f"Target validation summary: {validation_summary['valid_targets']}/{validation_summary['total_targets']} targets valid ({validation_summary['success_rate']})")
+        
+        # Filter out invalid targets
+        valid_targets = []
+        invalid_targets = []
+        for target in targets:
+            validation_result = validation_results.get(target.path)
+            if validation_result and validation_result.is_valid:
+                valid_targets.append(target)
+                # Add validation metadata to target
+                if validation_result.metadata:
+                    target.metadata.update(validation_result.metadata)
+            else:
+                invalid_targets.append((target, validation_result.error_message if validation_result else "Unknown validation error"))
+        
+        if invalid_targets:
+            self.logger.warning(f"Skipping {len(invalid_targets)} invalid targets:")
+            for target, error in invalid_targets:
+                self.logger.warning(f"  - {target.path}: {error}")
+        
+        if not valid_targets:
+            raise SecurityScannerError("No valid targets to scan after validation")
+        
+        # Initialize scan summary with valid targets only
         summary = ScanSummary(
             scan_id=scan_id,
             start_time=start_time,
-            targets=targets,
+            targets=valid_targets,
             enabled_scanners=list(self.config.get_enabled_scanners())
         )
         
-        # Scan all targets
+        # Add validation summary to metadata
+        summary.metadata["validation_summary"] = validation_summary
+        summary.metadata["invalid_targets"] = [
+            {"path": target.path, "type": target.target_type.value, "error": error}
+            for target, error in invalid_targets
+        ]
+        
+        # Scan all valid targets
         all_results = []
         
         if self.config.parallel_scans:
-            all_results = self._scan_targets_parallel(targets)
+            all_results = self._scan_targets_parallel(valid_targets)
         else:
-            all_results = self._scan_targets_sequential(targets)
+            all_results = self._scan_targets_sequential(valid_targets)
         
         # Update summary
         summary.end_time = datetime.now()

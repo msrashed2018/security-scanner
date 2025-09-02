@@ -17,6 +17,8 @@ from .core.exceptions import SecurityScannerError, ConfigurationError
 from .core.template_generator import TemplateGenerator
 from .scanner_service import SecurityScannerService, check_scanner_dependencies
 from .scanners import AVAILABLE_SCANNERS
+from .utils.target_validator import TargetValidator
+from .core.models import ScanTarget, ScanTargetType
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -99,6 +101,19 @@ For more templates, see the templates/ directory.
     )
     
     parser.add_argument(
+        "--validate-targets",
+        nargs="+",
+        metavar="TARGET",
+        help="Validate scan targets before running scans"
+    )
+    
+    parser.add_argument(
+        "--target-type",
+        choices=["docker_image", "git_repository", "kubernetes_manifest", "terraform_code", "filesystem"],
+        help="Target type for validation (auto-detected if not specified)"
+    )
+    
+    parser.add_argument(
         "--version",
         action="version",
         version="Security Scanner 2.0.0 (YAML-driven)"
@@ -173,6 +188,125 @@ def list_templates() -> int:
     for template_type in generator.list_templates():
         print(f"  - {template_type}")
     return 0
+
+
+def validate_targets(targets: list, target_type: Optional[str] = None) -> int:
+    """Validate scan targets before running scans."""
+    try:
+        # Setup basic logging
+        setup_logging()
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        validator = TargetValidator(logger=logger)
+        
+        # Convert targets to ScanTarget objects
+        scan_targets = []
+        for target_path in targets:
+            if target_type:
+                # Use specified target type
+                try:
+                    scan_target_type = ScanTargetType(target_type)
+                except ValueError:
+                    print(f"Error: Invalid target type: {target_type}", file=sys.stderr)
+                    return 1
+            else:
+                # Auto-detect target type
+                scan_target_type = _detect_target_type(target_path)
+            
+            scan_targets.append(ScanTarget(
+                path=target_path,
+                target_type=scan_target_type
+            ))
+        
+        print(f"🔍 Validating {len(scan_targets)} target(s)...")
+        
+        # Validate targets
+        validation_results = validator.validate_targets(scan_targets)
+        
+        # Display results
+        valid_count = 0
+        invalid_count = 0
+        
+        for target in scan_targets:
+            result = validation_results.get(target.path)
+            if result and result.is_valid:
+                valid_count += 1
+                print(f"✓ {target.path} ({target.target_type.value}) - Valid")
+                
+                if result.warnings:
+                    for warning in result.warnings:
+                        print(f"  ⚠ Warning: {warning}")
+            else:
+                invalid_count += 1
+                error_msg = result.error_message if result else "Unknown validation error"
+                print(f"✗ {target.path} ({target.target_type.value}) - Invalid: {error_msg}")
+        
+        # Summary
+        total = len(scan_targets)
+        success_rate = (valid_count / total) * 100 if total > 0 else 0
+        
+        print(f"\n📊 Validation Summary:")
+        print(f"  Total targets: {total}")
+        print(f"  Valid targets: {valid_count}")
+        print(f"  Invalid targets: {invalid_count}")
+        print(f"  Success rate: {success_rate:.1f}%")
+        
+        if invalid_count > 0:
+            return 1
+        else:
+            print("\n🎉 All targets validated successfully!")
+            return 0
+    
+    except Exception as e:
+        print(f"Error validating targets: {e}", file=sys.stderr)
+        return 1
+
+
+def _detect_target_type(target_path: str) -> ScanTargetType:
+    """Auto-detect target type based on path characteristics."""
+    from urllib.parse import urlparse
+    
+    # Check if it's a URL (likely Git repository)
+    parsed = urlparse(target_path)
+    if parsed.scheme in ('http', 'https', 'git', 'ssh'):
+        return ScanTargetType.GIT_REPOSITORY
+    
+    # Check if it looks like a Docker image
+    if ('/' in target_path or ':' in target_path) and not target_path.startswith('/') and not target_path.startswith('./'):
+        # Heuristic: if it contains slashes or colons and doesn't look like a file path, assume Docker image
+        if not Path(target_path).exists():
+            return ScanTargetType.DOCKER_IMAGE
+    
+    # Check if it's a path
+    path = Path(target_path)
+    if path.exists():
+        if path.is_file():
+            # Check file extension for specific types
+            suffix = path.suffix.lower()
+            if suffix in ['.yaml', '.yml']:
+                try:
+                    content = path.read_text(encoding='utf-8', errors='ignore')
+                    if 'kind:' in content or 'apiVersion:' in content:
+                        return ScanTargetType.KUBERNETES_MANIFEST
+                except:
+                    pass
+            elif suffix in ['.tf', '.tfvars', '.hcl']:
+                return ScanTargetType.TERRAFORM_CODE
+        
+        # Default to filesystem for existing paths
+        return ScanTargetType.FILESYSTEM
+    
+    # If path doesn't exist, try to guess from name
+    if target_path.endswith(('.yaml', '.yml')) or 'k8s' in target_path.lower() or 'kubernetes' in target_path.lower():
+        return ScanTargetType.KUBERNETES_MANIFEST
+    elif target_path.endswith(('.tf', '.tfvars', '.hcl')) or 'terraform' in target_path.lower():
+        return ScanTargetType.TERRAFORM_CODE
+    elif '/' in target_path and ':' in target_path:
+        return ScanTargetType.DOCKER_IMAGE
+    
+    # Default fallback
+    return ScanTargetType.FILESYSTEM
 
 
 def run_scan(scan_request_path: str) -> int:
@@ -284,6 +418,9 @@ def main() -> int:
         
         if args.list_templates:
             return list_templates()
+        
+        if args.validate_targets:
+            return validate_targets(args.validate_targets, args.target_type)
         
         # Main scan command
         if not args.scan_request:
