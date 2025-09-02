@@ -100,4 +100,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD security-scanner --check-dependencies || exit 1
 
 # Default command - run the security scanner
-CMD ["security-scanner", "--help"]
+#CMD ["security-scanner", "--help"]
+CMD ["bash"]

@@ -42,40 +42,17 @@ The Security Scanner is a YAML-driven DevSecOps tool that orchestrates multiple 
 
 **The security scanner is designed to run as a Docker container** with all security tools pre-installed (~2GB image). This approach eliminates dependency management and ensures consistent, reproducible scans across different environments.
 
-#### Option 1: Docker Compose (Easiest)
-
-We provide ready-to-use Docker Compose files for common scanning scenarios:
-
-```bash
-# 1. Basic security scan of current directory
-docker-compose -f docker-compose.basic-scan.yml up
-
-# 2. Container security scan (Docker images)
-docker-compose -f docker-compose.container-scan.yml up
-
-# 3. Full security audit with report viewer
-docker-compose --profile viewer up
-
-# 4. Development mode (continuous scanning)
-docker-compose --profile dev up dev-scanner
-```
-
-**Available Docker Compose Files:**
-- `docker-compose.yml` - Full security audit with optional report viewer
-- `docker-compose.basic-scan.yml` - Quick basic scan
-- `docker-compose.container-scan.yml` - Container-focused security scanning
-
-#### Option 2: Docker Run Commands
+Docker Run Commands
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/your-org/security-scanner:latest
+docker pull msrashed/security-scanner:latest
 
 # Generate and run a basic scan
 docker run --rm \
   -v $(pwd):/workspace \
   -v $(pwd)/security-reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   sh -c "security-scanner --generate-template basic-scan > /tmp/scan.yaml && \
          sed -i 's|git_repositories: \[\]|git_repositories: [\"/workspace\"]|' /tmp/scan.yaml && \
          security-scanner /tmp/scan.yaml"
@@ -84,14 +61,14 @@ docker run --rm \
 docker run --rm \
   -v $(pwd):/workspace \
   -v $(pwd)/security-reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   security-scanner /workspace/.security-scan.yaml
 
 # Container security scan
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v $(pwd)/reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   sh -c "security-scanner --generate-template container-scan > /tmp/scan.yaml && \
          sed -i 's|docker_images: \[\]|docker_images: [\"nginx:latest\", \"node:18-alpine\"]|' /tmp/scan.yaml && \
          security-scanner /tmp/scan.yaml"
@@ -99,7 +76,7 @@ docker run --rm \
 # Test with example vulnerable files
 docker run --rm \
   -v $(pwd)/security-reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   sh -c "security-scanner --generate-template basic-scan > /tmp/scan.yaml && \
          sed -i 's|git_repositories: \[\]|filesystem_paths: [\"/app/examples/test-files\"]|' /tmp/scan.yaml && \
          security-scanner /tmp/scan.yaml"
@@ -119,7 +96,6 @@ docker run --rm \
 # Test the scanner with provided vulnerable examples
 git clone https://github.com/your-org/security-scanner.git
 cd security-scanner
-docker-compose -f docker-compose.basic-scan.yml up
 # Check results in ./security-reports/
 ```
 
@@ -225,7 +201,7 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            ghcr.io/your-org/security-scanner:latest \
+            msrashed/security-scanner:latest \
             security-scanner /workspace/.github/security-scan.yaml
       - name: Upload Results
         uses: actions/upload-artifact@v3
@@ -239,7 +215,7 @@ jobs:
 ```yaml
 security-scan:
   stage: security
-  image: ghcr.io/your-org/security-scanner:latest
+  image: msrashed/security-scanner:latest
   script:
     - security-scanner .gitlab-security-scan.yaml
   artifacts:
@@ -353,47 +329,11 @@ security-scanner/
 ├── docs/                   # Documentation
 │   ├── USAGE.md           # Detailed usage guide
 │   └── DEVSECOPS_ENHANCEMENT_PLAN.md  # Roadmap
-├── docker-compose.yml     # Full security audit (default)
-├── docker-compose.basic-scan.yml      # Quick basic scan
-├── docker-compose.container-scan.yml  # Container security focus
 ├── Dockerfile             # Container image definition
 ├── requirements.txt       # Python dependencies
 ├── LICENSE               # Apache 2.0 license
 └── README.md             # This file
 ```
-
-### Docker Compose Configurations
-
-The project includes three Docker Compose configurations for different use cases:
-
-#### 1. Full Security Audit (`docker-compose.yml`)
-```bash
-# Run comprehensive security scan
-docker-compose up security-scanner
-
-# Run with web-based report viewer
-docker-compose --profile viewer up
-
-# Continuous development scanning
-docker-compose --profile dev up dev-scanner
-```
-
-#### 2. Basic Scan (`docker-compose.basic-scan.yml`)
-```bash
-# Quick security scan of current directory
-docker-compose -f docker-compose.basic-scan.yml up
-```
-
-#### 3. Container Scan (`docker-compose.container-scan.yml`)
-```bash
-# Scan Docker images and containers
-docker-compose -f docker-compose.container-scan.yml up
-
-# With report viewer
-docker-compose -f docker-compose.container-scan.yml --profile viewer up
-```
-
-**Report Viewer**: Access web-based reports at http://localhost:8080 when using `--profile viewer`
 
 ### Adding Custom Scanners
 
@@ -437,12 +377,12 @@ The project includes sample vulnerable code files for testing scanner functional
 docker run --rm \
   -v $(pwd):/workspace \
   -v $(pwd)/security-reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   security-scanner --generate-template basic-scan | \
   sed 's|git_repositories: \["."\]|filesystem_paths: ["/app/examples/test-files"]|' | \
   docker run --rm -i \
   -v $(pwd)/security-reports:/app/reports \
-  ghcr.io/your-org/security-scanner:latest \
+  msrashed/security-scanner:latest \
   security-scanner /dev/stdin
 ```
 
