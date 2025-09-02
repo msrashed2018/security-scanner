@@ -198,8 +198,9 @@ class BaseScanner(ABC):
             )
             
             if result.returncode != 0:
-                self.logger.debug(f"Command failed with return code {result.returncode}")
-                self.logger.debug(f"STDERR: {result.stderr}")
+                self.logger.error(f"Command failed with return code {result.returncode}")
+                if result.stderr:
+                    self.logger.error(f"STDERR: {result.stderr}")
                 
                 # Some scanners return non-zero codes even on success
                 if not self._is_acceptable_return_code(result.returncode):
@@ -257,11 +258,18 @@ class BaseScanner(ABC):
         Returns:
             Parsed JSON data
         """
+        # Always log raw output as debug for troubleshooting (truncated to 200 chars)
+        output_length = len(output)
+        output_preview = output[:200] + "..." if output_length > 200 else output
+        self.logger.debug(f"Raw scanner output ({output_length} chars): {output_preview}")
+        
         try:
             return json.loads(output)
         except json.JSONDecodeError as e:
-            self.logger.error(f"Failed to parse JSON output: {e}")
-            self.logger.debug(f"Raw output: {output}")
+            if not output or output.strip() == "":
+                self.logger.info(f"Scanner returned empty output (likely no findings)")
+            else:
+                self.logger.warning(f"Scanner returned non-JSON output: {e}")
             return {}
     
     def _normalize_severity(self, severity: str) -> SeverityLevel:

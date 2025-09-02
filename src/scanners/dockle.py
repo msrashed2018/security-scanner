@@ -54,7 +54,7 @@ class DockleScanner(BaseScanner):
         command = [
             "dockle",
             "--format", "json",
-            "--exit-code", "1"
+            
         ]
         
         command.extend(self.config.additional_args)

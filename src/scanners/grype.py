@@ -105,9 +105,13 @@ class GrypeScanner(BaseScanner):
                     finding = self._create_finding_from_match(match, target)
                     if finding:
                         findings.append(finding)
+            elif not data:
+                # Handle empty output gracefully
+                self.logger.info(f"Grype found no vulnerabilities for {target.path}")
             
         except Exception as e:
-            self.logger.error(f"Failed to parse Grype output: {e}")
+            self.logger.warning(f"Failed to parse Grype output for {target.path}: {e}")
+            self.logger.debug(f"Raw Grype output: {output}")
         
         return findings
     

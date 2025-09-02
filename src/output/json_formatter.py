@@ -34,6 +34,9 @@ class JsonFormatter(BaseFormatter):
         summary_content = self._generate_summary_json(summary, output_config)
         self._write_file(summary_file, summary_content)
         
+        # Log where the file was written for debugging
+        self.logger.info(f"JSON report written to: {summary_file}")
+        
         # Generate individual scanner reports if requested
         if output_config.include_raw:
             self._generate_individual_reports(summary, output_dir, output_config)

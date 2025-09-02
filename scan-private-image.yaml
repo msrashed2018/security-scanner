@@ -29,7 +29,7 @@ scanners:
     timeout: 300
     severity_threshold: "MEDIUM"
     additional_args:
-      - "--cache-dir=/tmp/grype-cache"
+      
       - "--db-auto-update=false"
       - "--scope=squashed"
       - "--only-fixed"
@@ -68,7 +68,7 @@ scanners:
 
 # Output Configuration
 output:
-  base_dir: "security-reports"
+  base_dir: "reports"
   formats:
     - "json"
     - "html"
@@ -84,5 +84,5 @@ execution:
 
 # Logging Configuration
 logging:
-  level: "INFO"
+  level: "DEBUG"
   file: "private-image-scan.log"
