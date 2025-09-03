@@ -174,36 +174,17 @@ class TestTargetValidator:
     
     @patch('subprocess.run')
     @patch.object(TargetValidator, '_is_command_available')
-    def test_validate_docker_image_pull_success(self, mock_cmd_available, mock_run):
-        """Test Docker image validation with successful pull."""
+    def test_validate_docker_image_not_found_locally(self, mock_cmd_available, mock_run):
+        """Test Docker image validation when image is not found locally."""
         mock_cmd_available.return_value = True
-        # First call (inspect) fails, second call (pull) succeeds
-        mock_run.side_effect = [
-            MagicMock(returncode=1),  # inspect fails
-            MagicMock(returncode=0)   # pull succeeds
-        ]
-        
-        target = ScanTarget(path="nginx:latest", target_type=ScanTargetType.DOCKER_IMAGE)
-        result = self.validator._validate_docker_image(target)
-        
-        assert result.is_valid is True
-        assert result.metadata["image_source"] == "pulled"
-    
-    @patch('subprocess.run')
-    @patch.object(TargetValidator, '_is_command_available')
-    def test_validate_docker_image_pull_fails(self, mock_cmd_available, mock_run):
-        """Test Docker image validation with failed pull."""
-        mock_cmd_available.return_value = True
-        mock_run.side_effect = [
-            MagicMock(returncode=1),  # inspect fails
-            MagicMock(returncode=1, stderr="Error: image not found")  # pull fails
-        ]
+        mock_run.return_value = MagicMock(returncode=1)  # inspect fails
         
         target = ScanTarget(path="nonexistent:latest", target_type=ScanTargetType.DOCKER_IMAGE)
         result = self.validator._validate_docker_image(target)
         
         assert result.is_valid is False
-        assert "Failed to pull Docker image" in result.error_message
+        assert "Docker image not found locally" in result.error_message
+        assert "docker pull nonexistent:latest" in result.error_message
     
     @patch('subprocess.run')
     @patch.object(TargetValidator, '_is_command_available')
