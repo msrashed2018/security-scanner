@@ -1,0 +1,19 @@
+<div class="finding-card severity-{{ severity_class }}" data-severity="{{ severity_class }}" data-scanner="{{ scanner }}" data-target="{{ target }}" data-json="{{ raw_json }}">
+    <div class="finding-header">
+        <span class="finding-title">{{ title }}</span>
+        <div class="header-actions">
+            <button class="btn btn-sm btn-outline view-json-btn" title="View Raw JSON Data">
+                📄 JSON
+            </button>
+            <span class="severity-badge severity-{{ severity_class }}">{{ severity }}</span>
+        </div>
+    </div>
+    <div class="finding-content">
+        <div class="finding-meta">
+            <p><strong>Scanner:</strong> {{ scanner }}</p>
+            <p><strong>Target:</strong> {{ target }}</p>
+            <p><strong>Location:</strong> {{ location }}</p>
+            {{ additional_details }}
+        </div>
+    </div>
+</div>

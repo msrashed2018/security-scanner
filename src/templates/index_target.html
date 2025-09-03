@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Target Report - {{ target_name }}</title>
+    <style>{{ css_styles }}</style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="breadcrumb">
+                <a href="../../../index.html">🏠 All Scans</a> / 
+                <a href="../../index.html">📊 Scan</a> / 
+                <span>{{ target_name }}</span>
+            </div>
+            <h1>🎯 Target: {{ target_name }}</h1>
+            <div class="target-meta">
+                <p><strong>Total Findings:</strong> {{ total_findings }}</p>
+                <p><strong>Scanners Run:</strong> {{ scanners_count }}</p>
+            </div>
+            <div class="severity-summary">
+                {{ severity_badges }}
+            </div>
+        </header>
+        
+        <div class="summary-actions">
+            <a href="findings.html" class="btn btn-primary">🔍 Browse Findings</a>
+            <a href="combined_findings.json" class="btn btn-outline">📄 Combined Findings (JSON)</a>
+        </div>
+        
+        <main class="main-content">
+            <h2>🔧 Scanner Results</h2>
+            <div class="scanners-grid">
+                {{ scanners_html }}
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p><a href="../../index.html">← Back to Scan Overview</a></p>
+        </footer>
+    </div>
+</body>
+</html>

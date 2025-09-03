@@ -1,0 +1,212 @@
+/* General Body Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* Main Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.header h1, .header h2 {
+    margin: 0;
+    color: #0056b3;
+}
+
+.header .timestamp {
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Summary Stats */
+.summary-stats {
+    display: flex;
+    justify-content: space-around;
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat {
+    flex: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+/* Card Styles (for scans, targets, scanners) */
+.scan-card, .target-card, .scanner-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.scan-card:hover, .target-card:hover, .scanner-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+}
+
+/* Card Headers */
+.scan-header, .target-header, .scanner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.scan-header h3, .target-header h4, .scanner-header h4 {
+    margin: 0;
+}
+
+.scan-header h3 a, .target-header h4 a {
+    text-decoration: none;
+    color: #0056b3;
+}
+
+.scan-header h3 a:hover, .target-header h4 a:hover {
+    text-decoration: underline;
+}
+
+/* Badges for Severity and Status */
+.severity-badges, .status-badges {
+    margin-bottom: 15px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 0.85em;
+    font-weight: bold;
+    border-radius: 12px;
+    color: #fff;
+    margin-right: 5px;
+}
+
+.badge-critical { background-color: #dc3545; }
+.badge-high { background-color: #fd7e14; }
+.badge-medium { background-color: #ffc107; color: #333; }
+.badge-low { background-color: #17a2b8; }
+.badge-info { background-color: #6c757d; }
+.badge-success { background-color: #28a745; }
+.badge-secondary { background-color: #6c757d; }
+
+/* Action Buttons */
+.scan-actions, .target-actions, .scanner-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-outline:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Scanners List */
+.scanners-used, .scanners-list {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Description */
+.description {
+    font-style: italic;
+    color: #666;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #eee;
+}
+
+/* No Content Placeholders */
+.no-scans, .no-targets, .no-scanners {
+    text-align: center;
+    padding: 40px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+    font-size: 1.1em;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    font-size: 0.9em;
+    color: #888;
+}

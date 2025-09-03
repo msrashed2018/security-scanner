@@ -1,0 +1,13 @@
+<div class="finding-card severity-{{ severity_class }}" data-severity="{{ severity_class }}">
+    <div class="finding-header">
+        <span class="finding-title">{{ finding_type }}</span>
+        <span class="severity-badge severity-{{ severity_class }}">{{ severity }}</span>
+    </div>
+    <div class="finding-content">
+        <p class="finding-description">{{ description }}</p>
+        <p class="finding-location"><strong>Location:</strong> {{ location }}</p>
+        <div class="raw-data">
+            <pre><code>{{ raw_data }}</code></pre>
+        </div>
+    </div>
+</div>
