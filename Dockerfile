@@ -6,7 +6,7 @@ FROM python:3.13-slim
 # Versions (update here when you want to bump)
 ARG CHECKOV_VERSION=3.2.467
 ARG CONFTEST_VERSION=0.62.0
-ARG DEPENDENCY_CHECK_VERSION=8.4.3
+ARG DEPENDENCY_CHECK_VERSION=12.1.0
 ARG DOCKLE_VERSION=0.4.15
 ARG GITLEAKS_VERSION=8.28.0
 ARG GRYPE_VERSION=0.99.1
@@ -21,7 +21,7 @@ RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       ca-certificates curl wget git jq tar unzip gnupg libmagic1 file \
-      openjdk-17-jre-headless; \
+      openjdk-21-jre-headless; \
     rm -rf /var/lib/apt/lists/*
 
 # ---- Checkov (Python) ----
