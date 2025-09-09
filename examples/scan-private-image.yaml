@@ -8,6 +8,11 @@ scan_request:
 targets:
   docker_images:
     - "telesmartdevops/tsdm-backend:1.197.0"
+    - "telesmartdevops/tsdm-event-messaging:1.7.3"
+    - "telesmartdevops/tsdm-admin:1.197.0"
+    - "telesmartdevops/tsdm-portal-react:1.85.2"
+    - "telesmartdevops/tsdm-create-partition:dev-1.2.0"
+
   git_repositories: []
   kubernetes_manifests: []
   terraform_code: []
@@ -26,7 +31,7 @@ scanners:
 
   grype:
     enabled: true
-    timeout: 300
+    timeout: 900
     severity_threshold: "MEDIUM"
     additional_args:
       
@@ -38,19 +43,19 @@ scanners:
 
   syft:
     enabled: true
-    timeout: 300
+    timeout: 900
     severity_threshold: "INFO"
     additional_args: []
 
   dockle:
     enabled: true
-    timeout: 300
+    timeout: 900
     severity_threshold: "MEDIUM"
     additional_args: []
 
   hadolint:
     enabled: true
-    timeout: 300
+    timeout: 900
     severity_threshold: "MEDIUM"
     additional_args: []
 

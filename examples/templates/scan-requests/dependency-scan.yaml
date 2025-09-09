@@ -1,0 +1,61 @@
+# OWASP Dependency-Check Scan Configuration
+# This template demonstrates how to configure dependency vulnerability scanning
+# using OWASP Dependency-Check for various project types.
+
+targets:
+  - path: "/path/to/your/project"
+    type: "git_repository"
+    name: "MyProject"
+
+scanners:
+  dependency-check:
+    enabled: true
+    timeout: 1800  # 30 minutes (dependency scanning can be slow)
+    severity_threshold: "MEDIUM"
+    
+    # Advanced configuration options
+    additional_args:
+      - "--enableRetired"          # Include retired vulnerabilities
+      - "--enableExperimental"     # Include experimental analyzers
+      - "--nvdApiKey"             # Placeholder for NVD API key
+      - "YOUR_NVD_API_KEY_HERE"   # Replace with actual API key
+    
+    # Optional: Path to suppression file for false positives
+    suppression_file: "/path/to/dependency-check-suppressions.xml"
+    
+    # Optional: Custom database directory (for persistent storage)
+    database_directory: "/opt/dependency-check/data"
+    
+    # Optional: Update vulnerability database before scanning
+    update_database: true
+
+# Output configuration
+output:
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  
+  directory: "./scan-results"
+  
+  # Template for output file naming
+  filename_template: "dependency-scan-{timestamp}"
+
+# Optional: Filter findings by severity
+filters:
+  severity:
+    min_level: "MEDIUM"
+  
+  # Optional: Exclude specific CVEs (comma-separated)
+  exclude_cves: []
+
+# Optional: Notification settings
+notifications:
+  enabled: false
+  webhook_url: "https://your-webhook-endpoint.com/security-alerts"
+  
+# Scan execution settings
+execution:
+  parallel: false  # Dependency-Check should run sequentially
+  fail_on_findings: true
+  max_retries: 1

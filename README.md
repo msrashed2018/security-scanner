@@ -14,6 +14,7 @@ The Security Scanner is a YAML-driven DevSecOps tool that orchestrates multiple 
 
 ### 🛡️ Comprehensive Security Coverage
 - **Vulnerability Scanning**: Trivy, Grype for container and dependency vulnerabilities
+- **SCA (Software Composition Analysis)**: OWASP Dependency-Check for dependency vulnerability analysis
 - **SAST (Static Analysis)**: Semgrep for multi-language security analysis
 - **Container Security**: Dockle for Docker image security, Hadolint for Dockerfile linting
 - **Infrastructure as Code**: Checkov for Terraform/CloudFormation/Kubernetes security
@@ -83,7 +84,7 @@ docker run --rm \
 ```
 
 #### Why Docker?
-- ✅ **Zero Dependencies**: All 10+ security tools pre-installed
+- ✅ **Zero Dependencies**: All 11+ security tools pre-installed
 - ✅ **Consistent Results**: Same environment across all machines
 - ✅ **Isolation**: Secure sandboxed execution
 - ✅ **Easy CI/CD**: Simple integration with any pipeline
@@ -133,6 +134,13 @@ scanners:
     enabled: true
     timeout: 600
     severity_threshold: "HIGH"
+  dependency-check:
+    enabled: true
+    timeout: 1800  # 30 minutes for dependency scanning
+    severity_threshold: "MEDIUM"
+    additional_args:
+      - "--enableRetired"
+      - "--enableExperimental"
   semgrep:
     enabled: true
     timeout: 900
@@ -175,6 +183,7 @@ security-scanner --generate-template development > dev-workflow.yaml
 |---------|---------|-------------------|--------------|
 | **Trivy** | Vulnerability scanning | Containers, Git repos, Filesystems | CVE detection, dependency analysis, SBOM |
 | **Grype** | Vulnerability scanning | Containers, Git repos | Anchore's vulnerability database |
+| **OWASP Dependency-Check** | SCA/Dependency analysis | Git repos, Filesystems | CVE detection for 15+ languages, NVD integration |
 | **Semgrep** | SAST | Git repos, Filesystems | Multi-language security rules, OWASP Top 10 |
 | **Dockle** | Container linting | Docker images | CIS Docker Benchmark compliance |
 | **Hadolint** | Dockerfile linting | Dockerfiles | Best practices enforcement |

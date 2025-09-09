@@ -1,0 +1,123 @@
+# Multi-Language Dependency Vulnerability Scan
+# This configuration demonstrates scanning projects with multiple programming languages
+# for dependency vulnerabilities using OWASP Dependency-Check.
+
+targets:
+  # Java/Maven project
+  - path: "/workspace/java-app"
+    type: "filesystem"
+    name: "JavaApplication"
+  
+  # Node.js project  
+  - path: "/workspace/node-app"
+    type: "git_repository"
+    name: "NodeJSApplication"
+  
+  # Python project
+  - path: "/workspace/python-app"
+    type: "filesystem"
+    name: "PythonApplication"
+  
+  # .NET project
+  - path: "/workspace/dotnet-app"
+    type: "filesystem"
+    name: "DotNetApplication"
+
+scanners:
+  # OWASP Dependency-Check for comprehensive dependency analysis
+  dependency-check:
+    enabled: true
+    timeout: 2400  # 40 minutes for multiple projects
+    severity_threshold: "MEDIUM"
+    
+    additional_args:
+      - "--enableRetired"
+      - "--enableExperimental"
+      - "--nvdApiKey"
+      - "${NVD_API_KEY}"  # Use environment variable
+      - "--format"
+      - "ALL"  # Generate all report formats
+    
+    # Use persistent database directory
+    database_directory: "/opt/dependency-check/data"
+    update_database: true
+  
+  # Complement with Trivy for additional coverage
+  trivy:
+    enabled: true
+    timeout: 600
+    severity_threshold: "HIGH"
+    scan_types:
+      - "vuln"
+      - "secret"
+    
+  # Add Grype for alternative vulnerability detection
+  grype:
+    enabled: true
+    timeout: 300
+    severity_threshold: "HIGH"
+
+# Output configuration
+output:
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+  
+  directory: "./dependency-scan-results"
+  filename_template: "multi-lang-dependency-scan-{timestamp}"
+  
+  # Generate consolidated report
+  consolidate_reports: true
+
+# Advanced filtering
+filters:
+  severity:
+    min_level: "MEDIUM"
+  
+  # Exclude test dependencies (common patterns)
+  exclude_paths:
+    - "*/test/*"
+    - "*/tests/*"
+    - "*/__tests__/*"
+    - "*/node_modules/*/test/*"
+    - "*/src/test/*"
+  
+  # Exclude development-only dependencies
+  exclude_scopes:
+    - "test"
+    - "dev"
+    - "development"
+
+# Execution settings
+execution:
+  parallel: false  # Run scanners sequentially for better resource management
+  fail_on_findings: true
+  
+  # Custom timeout per scanner
+  scanner_timeouts:
+    dependency-check: 2400
+    trivy: 600
+    grype: 300
+
+# Reporting enhancements
+reporting:
+  include_metrics: true
+  generate_summary: true
+  
+  # Custom report sections
+  sections:
+    - "executive_summary"
+    - "vulnerability_details"
+    - "remediation_guidance"
+    - "dependency_tree"
+
+# Integration settings for CI/CD
+ci_cd:
+  # Exit codes for different severity levels
+  exit_codes:
+    critical: 1
+    high: 1
+    medium: 0  # Don't fail CI for medium severity
+    low: 0
+    info: 0

@@ -6,6 +6,7 @@ FROM python:3.13-slim
 # Versions (update here when you want to bump)
 ARG CHECKOV_VERSION=3.2.467
 ARG CONFTEST_VERSION=0.62.0
+ARG DEPENDENCY_CHECK_VERSION=8.4.3
 ARG DOCKLE_VERSION=0.4.15
 ARG GITLEAKS_VERSION=8.28.0
 ARG GRYPE_VERSION=0.99.1
@@ -15,11 +16,12 @@ ARG SYFT_VERSION=1.32.0
 ARG TRIVY_VERSION=0.65.0
 ARG TRUFFLEHOG_VERSION=3.90.5
 
-# Basic utilities
+# Basic utilities and Java Runtime (required for OWASP Dependency-Check)
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      ca-certificates curl wget git jq tar unzip gnupg libmagic1 file; \
+      ca-certificates curl wget git jq tar unzip gnupg libmagic1 file \
+      openjdk-17-jre-headless; \
     rm -rf /var/lib/apt/lists/*
 
 # ---- Checkov (Python) ----
@@ -71,10 +73,20 @@ RUN set -eux; \
     curl -sSL -o trufflehog.tar.gz "https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"; \
     tar -xzf trufflehog.tar.gz trufflehog && mv trufflehog ${BIN_DIR}/trufflehog && chmod +x ${BIN_DIR}/trufflehog && rm -f trufflehog.tar.gz
 
+# ---- OWASP Dependency-Check ----
+RUN set -eux; \
+    curl -sSL -o dependency-check.zip "https://github.com/jeremylong/DependencyCheck/releases/download/v${DEPENDENCY_CHECK_VERSION}/dependency-check-${DEPENDENCY_CHECK_VERSION}-release.zip"; \
+    unzip dependency-check.zip -d /opt/; \
+    ln -s /opt/dependency-check/bin/dependency-check.sh ${BIN_DIR}/dependency-check; \
+    chmod +x ${BIN_DIR}/dependency-check; \
+    rm -f dependency-check.zip; \
+    mkdir -p /opt/dependency-check/data; \
+    chmod 755 /opt/dependency-check/data
+
 # Light check that binaries are on PATH
 RUN set -eux; \
     for c in \
-      python3 pip checkov conftest dockle gitleaks grype hadolint semgrep syft trivy trufflehog \
+      python3 pip checkov conftest dependency-check dockle gitleaks grype hadolint semgrep syft trivy trufflehog \
     ; do command -v "$c" >/dev/null; done
 
 # Copy Python application
@@ -112,8 +124,8 @@ RUN set -eux; \
 # Final validation check - ensure all required tools are available
 RUN set -eux; \
     for c in \
-      python3 pip checkov conftest dockle gitleaks grype hadolint semgrep syft trivy trufflehog \
-      git docker file \
+      python3 pip checkov conftest dependency-check dockle gitleaks grype hadolint semgrep syft trivy trufflehog \
+      git docker file java \
     ; do command -v "$c" >/dev/null; done
 
 # Health check

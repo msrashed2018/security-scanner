@@ -57,39 +57,302 @@ This document provides a comprehensive analysis of the current security scanner 
 - **Docker Integration**: ✅ Complete containerization with multi-scenario support
 - **Documentation**: ✅ Comprehensive rewrite emphasizing Docker-first approach
 
-## 🚨 Critical Security Coverage Gaps
+## 🚨 Comprehensive Security Tools Integration Plan
 
-### Missing Security Domains
+### Pipeline & Runtime Security Tools Matrix
 
-#### 1. SAST (Static Application Security Testing)
-- **Gap**: No source code security analysis
-- **Impact**: Missing language-specific vulnerabilities, logic flaws, coding best practices
-- **Risk Level**: HIGH
+This section outlines all widely-used, open-source security tools that should be integrated into our all-in-one DevSecOps Docker image for comprehensive security coverage across pipelines and production environments.
 
-#### 2. DAST (Dynamic Application Security Testing)  
-- **Gap**: No runtime security testing
-- **Impact**: Missing runtime vulnerabilities, API security issues, authentication flaws
-- **Risk Level**: HIGH
+### 🔧 Static Application Security Testing (SAST) Tools
 
-#### 3. Container Runtime Security
-- **Gap**: No runtime threat detection
-- **Impact**: Missing workload monitoring, runtime anomaly detection
-- **Risk Level**: MEDIUM
+#### Currently Integrated
+- **Semgrep** - Multi-language SAST with 2000+ rules ✅
+- **Bandit** - Python security linting ⚠️ (Basic integration exists)
 
-#### 4. Supply Chain Security
-- **Gap**: Limited dependency analysis
-- **Impact**: Missing malware detection, compromised packages, supply chain attacks
-- **Risk Level**: HIGH
+#### Additional SAST Tools for Integration
+- **SonarQube Community** - Enterprise-grade code quality and security analysis
+  - **Use Cases**: Pipeline code quality gates, technical debt tracking
+  - **Languages**: 25+ languages including Java, C#, Python, JavaScript, TypeScript
+  - **Integration Priority**: P0 (High business impact)
+  
+- **CodeQL** - GitHub's semantic code analysis engine
+  - **Use Cases**: Deep security analysis, vulnerability research, custom queries
+  - **Languages**: C/C++, C#, Go, Java, JavaScript, Python, Ruby
+  - **Integration Priority**: P0 (Powerful query-based analysis)
 
-#### 5. Compliance & Governance
-- **Gap**: No compliance framework support
-- **Impact**: Missing SOC2, PCI-DSS, HIPAA compliance validation
-- **Risk Level**: MEDIUM
+- **ESLint Security Plugin** - JavaScript/TypeScript security linting
+  - **Use Cases**: Frontend security, Node.js security
+  - **Languages**: JavaScript, TypeScript, React, Vue, Angular
+  - **Integration Priority**: P1 (Web app security)
 
-#### 6. Policy Enforcement
-- **Gap**: No security gates or policy-as-code
-- **Impact**: No automated security decision making, manual gate processes
-- **Risk Level**: HIGH
+- **Gosec** - Go security checker
+  - **Use Cases**: Go microservices security, Kubernetes tools security
+  - **Languages**: Go
+  - **Integration Priority**: P1 (Cloud-native security)
+
+- **Brakeman** - Ruby on Rails security scanner
+  - **Use Cases**: Rails application security
+  - **Languages**: Ruby, Ruby on Rails
+  - **Integration Priority**: P2 (Domain-specific)
+
+- **PMD & SpotBugs** - Java security analysis
+  - **Use Cases**: Java enterprise application security
+  - **Languages**: Java, Kotlin, Scala
+  - **Integration Priority**: P1 (Enterprise Java security)
+
+- **RuboCop Security** - Ruby security linting
+  - **Use Cases**: Ruby application security
+  - **Languages**: Ruby
+  - **Integration Priority**: P2 (Ruby ecosystem)
+
+### 🌐 Dynamic Application Security Testing (DAST) Tools
+
+#### Web Application DAST
+- **OWASP ZAP (Zed Attack Proxy)** - Industry-standard web app scanner
+  - **Use Cases**: Web app penetration testing, API security testing, CI/CD integration
+  - **Capabilities**: Active/passive scanning, API testing, authentication testing
+  - **Integration Priority**: P0 (Essential for web app security)
+
+- **Nikto** - Web server scanner
+  - **Use Cases**: Web server configuration testing, CGI scanning
+  - **Capabilities**: Server misconfiguration detection, outdated software detection
+  - **Integration Priority**: P1 (Infrastructure security)
+
+- **Nuclei** - Fast vulnerability scanner
+  - **Use Cases**: Infrastructure scanning, web app testing, cloud security
+  - **Capabilities**: 3000+ templates, DNS/HTTP/Network protocols
+  - **Integration Priority**: P0 (Fast, comprehensive scanning)
+
+- **Wapiti** - Web application vulnerability scanner
+  - **Use Cases**: Web application penetration testing
+  - **Capabilities**: SQL injection, XSS, file inclusion detection
+  - **Integration Priority**: P1 (Web app security)
+
+#### API Security Testing
+- **RestTer** - REST API security testing
+  - **Use Cases**: REST API penetration testing
+  - **Integration Priority**: P1 (API-first applications)
+
+- **GraphQL Cop** - GraphQL security scanner
+  - **Use Cases**: GraphQL API security testing
+  - **Integration Priority**: P2 (GraphQL security)
+
+### 🔐 Additional Secret Detection Tools
+
+#### Currently Integrated
+- **TruffleHog** - Comprehensive secret detection ✅
+- **GitLeaks** - Git repository secret scanning ✅
+
+#### Additional Secret Detection Tools
+- **detect-secrets** - Yelp's secret detection tool
+  - **Use Cases**: Pre-commit secret detection, baseline management
+  - **Integration Priority**: P1 (Prevents secret commits)
+
+- **Whispers** - Static code analysis for hardcoded secrets
+  - **Use Cases**: Configuration file scanning, source code analysis
+  - **Integration Priority**: P2 (Configuration security)
+
+- **SecretScanner** - Docker image and filesystem secret scanning
+  - **Use Cases**: Container image secret detection
+  - **Integration Priority**: P1 (Container security)
+
+### 🐳 Enhanced Container & Infrastructure Security
+
+#### Currently Integrated
+- **Trivy** - Container vulnerability scanner ✅
+- **Dockle** - Container security linter ✅
+- **Hadolint** - Dockerfile linter ✅
+- **Checkov** - Infrastructure as Code scanner ✅
+
+#### Additional Container Security Tools
+- **Clair** - Container vulnerability static analysis
+  - **Use Cases**: Container registry integration, vulnerability management
+  - **Integration Priority**: P1 (Enterprise container security)
+
+- **Anchore Engine** - Container image analysis
+  - **Use Cases**: Policy-based container security, compliance validation
+  - **Integration Priority**: P1 (Policy enforcement)
+
+- **Falco** - Runtime security monitoring and threat detection
+  - **Use Cases**: Production runtime security, anomaly detection, compliance monitoring
+  - **Capabilities**: Kubernetes security, syscall monitoring, behavioral analysis
+  - **Integration Priority**: P0 (Critical for production security)
+
+- **OpenSCAP** - Security compliance and configuration scanning
+  - **Use Cases**: CIS benchmarks, STIG compliance, configuration hardening
+  - **Integration Priority**: P1 (Compliance automation)
+
+- **Kube-hunter** - Kubernetes penetration testing
+  - **Use Cases**: Kubernetes cluster security testing
+  - **Integration Priority**: P1 (K8s security)
+
+- **Kubescape** - Kubernetes security platform
+  - **Use Cases**: K8s configuration scanning, RBAC analysis, network policy validation
+  - **Capabilities**: NSA/CISA guidelines, MITRE ATT&CK mapping
+  - **Integration Priority**: P0 (Kubernetes security)
+
+#### Infrastructure as Code (IaC) Security
+- **tfsec** - Terraform security scanner
+  - **Use Cases**: Terraform code security analysis
+  - **Integration Priority**: P1 (Terraform security)
+
+- **Terrascan** - IaC security scanner
+  - **Use Cases**: Terraform, Kubernetes, Docker, AWS CloudFormation security
+  - **Integration Priority**: P1 (Multi-IaC support)
+
+- **Snyk IaC** - Infrastructure as Code security
+  - **Use Cases**: Cloud misconfigurations, IaC vulnerabilities
+  - **Integration Priority**: P1 (Cloud security)
+
+### 🔍 Advanced Vulnerability & Dependency Management
+
+#### Currently Integrated
+- **Grype** - Vulnerability scanner ✅
+- **Syft** - SBOM generation ✅
+
+#### Additional Vulnerability Management Tools
+- **OWASP Dependency-Check** - Dependency vulnerability scanner
+  - **Use Cases**: Java, .NET, JavaScript, Python dependency scanning
+  - **Integration Priority**: P0 (Essential dependency security)
+
+- **Retire.js** - JavaScript library vulnerability scanner
+  - **Use Cases**: Frontend dependency security, Node.js security
+  - **Integration Priority**: P1 (JavaScript security)
+
+- **Safety** - Python package vulnerability scanner
+  - **Use Cases**: Python dependency security
+  - **Integration Priority**: P1 (Python ecosystem security)
+
+- **bundler-audit** - Ruby dependency vulnerability scanner
+  - **Use Cases**: Ruby gem security scanning
+  - **Integration Priority**: P2 (Ruby ecosystem)
+
+- **Nancy** - Go dependency vulnerability scanner
+  - **Use Cases**: Go module security scanning
+  - **Integration Priority**: P1 (Go ecosystem security)
+
+- **OSV-Scanner** - Google's Open Source Vulnerability scanner
+  - **Use Cases**: Multi-language dependency scanning, OSV database integration
+  - **Integration Priority**: P0 (Comprehensive vulnerability detection)
+
+### 🌩️ Cloud Security Posture Management (CSPM)
+
+- **Prowler** - AWS, Azure, GCP security assessment
+  - **Use Cases**: Cloud infrastructure security auditing, compliance validation
+  - **Capabilities**: CIS benchmarks, SOC2, PCI-DSS compliance
+  - **Integration Priority**: P0 (Essential for cloud security)
+
+- **ScoutSuite** - Multi-cloud security auditing
+  - **Use Cases**: AWS, Azure, GCP, Alibaba Cloud security assessment
+  - **Integration Priority**: P1 (Multi-cloud environments)
+
+- **CloudSploit** - Cloud security scanning
+  - **Use Cases**: AWS, Azure, GCP, Oracle Cloud security scanning
+  - **Integration Priority**: P1 (Cloud security automation)
+
+- **Steampipe** - Universal query interface for cloud APIs
+  - **Use Cases**: Cloud inventory, compliance as code, security analysis
+  - **Integration Priority**: P2 (Advanced cloud analysis)
+
+### 🔄 Runtime Application Self-Protection (RASP) & Monitoring
+
+- **Falco** - Runtime threat detection (mentioned above)
+- **Wazuh** - Security monitoring and threat detection platform
+  - **Use Cases**: Host-based intrusion detection (HIDS), log analysis, compliance monitoring
+  - **Capabilities**: Real-time threat detection, security incident response
+  - **Integration Priority**: P0 (Critical for production monitoring)
+
+- **OSSEC** - Host-based intrusion detection system
+  - **Use Cases**: Log analysis, integrity checking, rootkit detection
+  - **Integration Priority**: P1 (Host security monitoring)
+
+- **Suricata** - Network security monitoring
+  - **Use Cases**: Network intrusion detection/prevention, network security monitoring
+  - **Integration Priority**: P2 (Network security)
+
+### 🔐 License Compliance & Supply Chain Security
+
+#### Additional Supply Chain Tools
+- **FOSSA** - Open source license compliance
+  - **Use Cases**: License risk analysis, dependency tracking
+  - **Integration Priority**: P1 (License compliance)
+
+- **CycloneDX** - Software Bill of Materials (SBOM) standard
+  - **Use Cases**: Enhanced SBOM generation, supply chain transparency
+  - **Integration Priority**: P1 (Supply chain security)
+
+- **in-toto** - Supply chain integrity verification
+  - **Use Cases**: Software supply chain security, provenance verification
+  - **Integration Priority**: P1 (Supply chain integrity)
+
+### 📊 Security Metrics & Observability
+
+- **Prometheus** - Metrics collection and monitoring
+  - **Use Cases**: Security metrics collection, alerting
+  - **Integration Priority**: P0 (Essential for monitoring)
+
+- **Grafana** - Metrics visualization and dashboards
+  - **Use Cases**: Security dashboards, trend analysis
+  - **Integration Priority**: P0 (Essential for visibility)
+
+- **Jaeger** - Distributed tracing
+  - **Use Cases**: Application security tracing, performance security analysis
+  - **Integration Priority**: P2 (Advanced observability)
+
+### 🚀 API Security & Testing Tools
+
+- **Postman Newman** - API testing automation
+  - **Use Cases**: API security testing automation
+  - **Integration Priority**: P1 (API testing)
+
+- **Dredd** - HTTP API testing framework
+  - **Use Cases**: API contract testing, security validation
+  - **Integration Priority**: P2 (API contract security)
+
+- **Artillery** - Load testing and API security testing
+  - **Use Cases**: Performance security testing, API load testing
+  - **Integration Priority**: P2 (Performance security)
+
+### 🔧 Mobile Application Security
+
+- **MobSF** - Mobile Security Framework
+  - **Use Cases**: Android/iOS application security testing
+  - **Capabilities**: Static/dynamic analysis, API testing
+  - **Integration Priority**: P2 (Mobile app security)
+
+- **QARK** - Quick Android Review Kit
+  - **Use Cases**: Android application security scanning
+  - **Integration Priority**: P2 (Android security)
+
+### 💻 Database Security
+
+- **SQLMap** - SQL injection testing tool
+  - **Use Cases**: Database security testing, SQL injection detection
+  - **Integration Priority**: P1 (Database security)
+
+- **NoSQLMap** - NoSQL injection testing
+  - **Use Cases**: MongoDB, CouchDB, Redis security testing
+  - **Integration Priority**: P2 (NoSQL security)
+
+### 🌐 Network Security Tools
+
+- **Nmap** - Network discovery and security auditing
+  - **Use Cases**: Network reconnaissance, port scanning, service detection
+  - **Integration Priority**: P1 (Infrastructure security)
+
+- **Masscan** - Fast port scanner
+  - **Use Cases**: Large-scale port scanning, network discovery
+  - **Integration Priority**: P2 (Network reconnaissance)
+
+### 🔍 Malware Detection
+
+- **ClamAV** - Antivirus engine
+  - **Use Cases**: Container image malware scanning, file system scanning
+  - **Integration Priority**: P1 (Malware protection)
+
+- **YARA** - Malware identification and classification
+  - **Use Cases**: Custom malware detection rules, threat hunting
+  - **Integration Priority**: P2 (Advanced malware detection)
 
 ## 🔧 Enhanced DevSecOps Roadmap (Post-Restructuring)
 
@@ -1681,3 +1944,538 @@ class SecurityOrchestrator:
 │   │   ├── fix_suggestions.ts
 │   │   └── security_dashboard.ts
 │   └── jetbrains_plugin/             # JetBrains plugin
+│       ├── security_linter.kt
+│       ├── vulnerability_highlighter.kt
+│       └── fix_suggestions.kt
+├── git_hooks/
+│   ├── pre_commit_security.sh          # Pre-commit security checks
+│   ├── pre_push_security.sh            # Pre-push security validation
+│   └── commit_msg_security.sh          # Security-aware commit messages
+└── webhooks/
+    ├── github_webhook_handler.py       # GitHub webhook integration
+    ├── gitlab_webhook_handler.py       # GitLab webhook integration
+    ├── bitbucket_webhook_handler.py    # Bitbucket webhook integration
+    └── generic_webhook_handler.py      # Generic webhook support
+```
+
+**Implementation Priority**: P1
+**Effort**: High (6-8 weeks)
+**Impact**: High - Seamless developer workflow integration
+
+## 🔄 Enhanced Docker Image Strategy for All-in-One Security Platform
+
+### Comprehensive Security Tools Docker Integration
+
+To achieve your objective of using this Docker image for all scanning tools in pipelines and on hosting servers, here's the enhanced integration strategy:
+
+### 📦 Multi-Stage Docker Architecture
+
+```dockerfile
+# Enhanced Dockerfile for All-in-One Security Platform
+FROM ubuntu:22.04 AS base-security-tools
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl wget git python3 python3-pip nodejs npm \
+    openjdk-17-jdk maven gradle \
+    golang-go ruby ruby-dev \
+    docker.io podman \
+    nmap masscan \
+    && rm -rf /var/lib/apt/lists/*
+
+# SAST Tools Layer
+FROM base-security-tools AS sast-tools
+RUN pip3 install bandit semgrep safety \
+    && npm install -g retire eslint eslint-plugin-security \
+    && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest \
+    && gem install brakeman rubocop rubocop-rails
+
+# DAST Tools Layer
+FROM sast-tools AS dast-tools
+RUN apt-get update && apt-get install -y \
+    zaproxy nikto wapiti \
+    && wget -O /usr/local/bin/nuclei https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei-linux-amd64 \
+    && chmod +x /usr/local/bin/nuclei
+
+# Container Security Tools Layer
+FROM dast-tools AS container-tools
+RUN curl -sSfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin \
+    && wget -O - https://toolbox.googleapps.com/wappalyzer/releases/latest/download/dockle-linux-amd64.tar.gz | tar zxvf - -C /usr/local/bin \
+    && docker run --rm -v /usr/local/bin:/output aquasec/trivy:latest cp /usr/local/bin/trivy /output/
+
+# Infrastructure Security Tools Layer
+FROM container-tools AS iac-tools
+RUN pip3 install checkov terrascan \
+    && go install github.com/aquasecurity/tfsec/cmd/tfsec@latest \
+    && curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+# Runtime Security Tools Layer
+FROM iac-tools AS runtime-tools
+RUN curl -s https://falco.org/repo/falcosecurity-3672BA8F.asc | apt-key add - \
+    && echo "deb https://download.falco.org/packages/deb stable main" | tee -a /etc/apt/sources.list.d/falcosecurity.list \
+    && apt-get update && apt-get install -y falco
+
+# Cloud Security Tools Layer
+FROM runtime-tools AS cloud-tools
+RUN pip3 install prowler ScoutSuite \
+    && git clone https://github.com/cloudsploit/scans.git /opt/cloudsploit
+
+# API Security Tools Layer
+FROM cloud-tools AS api-tools
+RUN npm install -g newman dredd artillery \
+    && pip3 install postman-to-openapi
+
+# Mobile Security Tools Layer
+FROM api-tools AS mobile-tools
+RUN git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git /opt/mobsf \
+    && pip3 install -r /opt/mobsf/requirements.txt
+
+# Database Security Tools Layer
+FROM mobile-tools AS db-tools
+RUN git clone https://github.com/sqlmapproject/sqlmap.git /opt/sqlmap \
+    && git clone https://github.com/codingo/NoSQLMap.git /opt/nosqlmap
+
+# Network Security Tools Layer
+FROM db-tools AS network-tools
+RUN apt-get update && apt-get install -y nmap masscan suricata \
+    && wget https://github.com/robertdavidgraham/masscan/releases/latest/download/masscan-linux.tar.gz
+
+# Monitoring & Observability Layer
+FROM network-tools AS monitoring-tools
+RUN wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus-linux-amd64.tar.gz \
+    && tar -xzf prometheus-linux-amd64.tar.gz \
+    && mv prometheus-*/prometheus /usr/local/bin/
+
+# Final Security Scanner Image
+FROM monitoring-tools AS final-security-scanner
+
+# Copy our security scanner application
+COPY src/ /app/src/
+COPY requirements.txt /app/
+COPY examples/ /app/examples/
+COPY docs/ /app/docs/
+
+# Install our application
+RUN cd /app && pip3 install -r requirements.txt \
+    && pip3 install -e .
+
+# Create security scanner wrapper script
+RUN cat > /usr/local/bin/security-scanner-wrapper << 'EOF'
+#!/bin/bash
+set -e
+
+# Initialize security databases
+echo "Initializing security databases..."
+trivy image --download-db-only
+nuclei -update-templates -silent
+
+# Update vulnerability databases
+if [ "$UPDATE_DBS" = "true" ]; then
+    echo "Updating vulnerability databases..."
+    safety check --db /tmp/safety-db --full-report || true
+    retire --updatedb || true
+fi
+
+# Run the security scanner
+exec python3 -m src "$@"
+EOF
+
+RUN chmod +x /usr/local/bin/security-scanner-wrapper
+
+# Set up entrypoint
+ENTRYPOINT ["/usr/local/bin/security-scanner-wrapper"]
+
+# Default command
+CMD ["--help"]
+
+# Labels for container metadata
+LABEL maintainer="Security Team"
+LABEL description="All-in-One DevSecOps Security Scanner"
+LABEL version="2.0.0"
+LABEL tools="trivy,grype,semgrep,bandit,checkov,trufflehog,gitleaks,dockle,hadolint,nuclei,zap,falco,prowler"
+```
+
+### 🚀 Pipeline Integration Configurations
+
+#### GitHub Actions All-in-One Security Pipeline
+```yaml
+name: 'Comprehensive Security Pipeline'
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly deep scan
+
+jobs:
+  security-pipeline:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scan-type: [
+          'sast-scan',
+          'dast-scan',
+          'container-scan',
+          'iac-scan',
+          'dependency-scan',
+          'secret-scan',
+          'cloud-security-scan'
+        ]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run Security Scanner
+        uses: docker://msrashed/security-scanner:latest
+        with:
+          scan-type: ${{ matrix.scan-type }}
+          target: ${{ github.workspace }}
+          config: .security-scan.yaml
+          output-dir: security-reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPDATE_DBS: 'true'
+      
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports-${{ matrix.scan-type }}
+          path: security-reports/
+          retention-days: 30
+      
+      - name: Security Gate Check
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ${{ github.workspace }}/security-reports:/reports \
+            msrashed/security-scanner:latest \
+            security-gate --reports-dir=/reports --fail-on=critical,high
+
+  consolidate-results:
+    needs: security-pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Consolidate Security Results
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            msrashed/security-scanner:latest \
+            consolidate-reports --input-dir=/workspace --output=/workspace/consolidated-report.html
+      
+      - name: Publish Security Dashboard
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./consolidated-report
+          destination_dir: security-dashboard
+```
+
+#### Jenkins Pipeline Configuration
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        SECURITY_SCANNER_IMAGE = 'msrashed/security-scanner:latest'
+        SECURITY_CONFIG = '.security-scan.yaml'
+    }
+    
+    stages {
+        stage('Security Scan Matrix') {
+            matrix {
+                axes {
+                    axis {
+                        name 'SCAN_TYPE'
+                        values 'sast', 'dast', 'container', 'iac', 'dependencies', 'secrets', 'cloud'
+                    }
+                }
+                stages {
+                    stage('Run Security Scan') {
+                        steps {
+                            script {
+                                sh """
+                                    docker run --rm \
+                                        -v \${WORKSPACE}:/workspace \
+                                        -v /var/run/docker.sock:/var/run/docker.sock \
+                                        -v \${WORKSPACE}/reports:/reports \
+                                        -e SCAN_TYPE=\${SCAN_TYPE} \
+                                        -e UPDATE_DBS=true \
+                                        \${SECURITY_SCANNER_IMAGE} \
+                                        --scan-type=\${SCAN_TYPE} \
+                                        --target=/workspace \
+                                        --config=/workspace/\${SECURITY_CONFIG} \
+                                        --output-dir=/reports/\${SCAN_TYPE}
+                                """
+                            }
+                        }
+                        post {
+                            always {
+                                archiveArtifacts artifacts: "reports/${SCAN_TYPE}/**/*", allowEmptyArchive: true
+                                publishHTML([
+                                    allowMissing: false,
+                                    alwaysLinkToLastBuild: true,
+                                    keepAll: true,
+                                    reportDir: "reports/${SCAN_TYPE}",
+                                    reportFiles: 'index.html',
+                                    reportName: "Security Report - ${SCAN_TYPE}",
+                                    reportTitles: ''
+                                ])
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Security Gate') {
+            steps {
+                sh """
+                    docker run --rm \
+                        -v \${WORKSPACE}/reports:/reports \
+                        \${SECURITY_SCANNER_IMAGE} \
+                        security-gate \
+                        --reports-dir=/reports \
+                        --policy-config=/reports/security-policy.yaml \
+                        --fail-on=critical,high
+                """
+            }
+        }
+        
+        stage('Generate Consolidated Report') {
+            steps {
+                sh """
+                    docker run --rm \
+                        -v \${WORKSPACE}/reports:/reports \
+                        -v \${WORKSPACE}/consolidated:/output \
+                        \${SECURITY_SCANNER_IMAGE} \
+                        consolidate-reports \
+                        --input-dir=/reports \
+                        --output-dir=/output \
+                        --format=html,json,sarif
+                """
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'consolidated',
+                        reportFiles: 'index.html',
+                        reportName: 'Consolidated Security Report',
+                        reportTitles: ''
+                    ])
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Send notifications
+            script {
+                if (currentBuild.result == 'FAILURE') {
+                    slackSend(
+                        channel: '#security-alerts',
+                        color: 'danger',
+                        message: "Security Pipeline Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
+                    )
+                }
+            }
+        }
+    }
+}
+```
+
+### 🏭 Production Server Integration
+
+#### Kubernetes CronJob for Regular Security Scanning
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scanner-cronjob
+  namespace: security-monitoring
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: security-scanner
+            image: msrashed/security-scanner:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Production security scanning
+              security-scanner-wrapper \
+                --scan-type=production-runtime \
+                --target=/host-system \
+                --config=/config/production-security.yaml \
+                --output-dir=/reports/$(date +%Y%m%d) \
+                --enable-runtime-monitoring \
+                --cloud-provider=aws \
+                --compliance-frameworks=soc2,pci-dss
+            env:
+            - name: UPDATE_DBS
+              value: "true"
+            - name: ENVIRONMENT
+              value: "production"
+            volumeMounts:
+            - name: host-system
+              mountPath: /host-system
+              readOnly: true
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: config-volume
+              mountPath: /config
+            - name: reports-volume
+              mountPath: /reports
+          volumes:
+          - name: host-system
+            hostPath:
+              path: /
+          - name: docker-socket
+            hostPath:
+              path: /var/run/docker.sock
+          - name: config-volume
+            configMap:
+              name: security-scanner-config
+          - name: reports-volume
+            persistentVolumeClaim:
+              claimName: security-reports-pvc
+          restartPolicy: OnFailure
+          serviceAccountName: security-scanner-sa
+```
+
+#### Docker Compose for Production Monitoring
+```yaml
+version: '3.8'
+services:
+  security-scanner-runtime:
+    image: msrashed/security-scanner:latest
+    container_name: security-scanner-runtime
+    command: >
+      security-scanner-wrapper
+      --mode=runtime-monitoring
+      --target=/host-system
+      --config=/config/runtime-security.yaml
+      --continuous-monitoring=true
+      --alert-webhook=${ALERT_WEBHOOK_URL}
+    environment:
+      - UPDATE_DBS=true
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    volumes:
+      - /:/host-system:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config:/config:ro
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  security-dashboard:
+    image: msrashed/security-scanner:latest
+    container_name: security-dashboard
+    command: >
+      python3 -m src.dashboard
+      --mode=server
+      --port=8080
+      --reports-dir=/app/reports
+      --enable-api=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./reports:/app/reports:ro
+      - ./config:/app/config:ro
+    depends_on:
+      - security-scanner-runtime
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: security-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: security-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
+```
+
+### 📋 Updated Priority Matrix for All-in-One Platform
+
+| Security Tool Category | Business Impact | Technical Effort | Integration Complexity | Priority |
+|------------------------|-----------------|------------------|----------------------|----------|
+| **Enhanced SAST (CodeQL, SonarQube)** | High | Medium | Medium | **P0** |
+| **DAST Integration (OWASP ZAP, Nuclei)** | High | Medium | Medium | **P0** |
+| **Runtime Security (Falco, Wazuh)** | High | High | High | **P0** |
+| **Cloud Security (Prowler, Kubescape)** | High | Medium | Medium | **P0** |
+| **API Security (Newman, Dredd)** | Medium | Low | Low | **P1** |
+| **Mobile Security (MobSF)** | Medium | Medium | High | **P1** |
+| **Database Security (SQLMap)** | Medium | Low | Medium | **P1** |
+| **Network Security (Nmap, Suricata)** | Medium | Medium | Medium | **P2** |
+| **Malware Detection (ClamAV, YARA)** | Low | Low | Low | **P2** |
+
+### 🎯 Implementation Roadmap for All-in-One Platform
+
+#### Phase 1 (0-30 days): Core Tool Integration
+1. **Enhanced Docker Image**: Integrate P0 security tools
+2. **Pipeline Templates**: Create comprehensive CI/CD templates
+3. **Runtime Monitoring**: Implement Falco and Wazuh integration
+4. **Cloud Security**: Add Prowler and Kubescape support
+
+#### Phase 2 (30-60 days): Advanced Features
+1. **DAST Integration**: Complete OWASP ZAP and Nuclei integration
+2. **API Security**: Implement API testing frameworks
+3. **Enhanced Reporting**: Advanced dashboards and metrics
+4. **Policy Engine**: Advanced policy-as-code implementation
+
+#### Phase 3 (60-90 days): Enterprise Features
+1. **Mobile Security**: MobSF integration
+2. **Database Security**: SQLMap and NoSQLMap integration
+3. **Advanced Analytics**: AI-powered risk assessment
+4. **Multi-tenant Support**: Enterprise scalability features
+
+This comprehensive enhancement transforms your security scanner into a true all-in-one DevSecOps platform that can serve as the organizational standard for security across all projects, pipelines, and production environments.
